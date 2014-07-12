@@ -14,8 +14,24 @@ pro Dict::setProperty, _extra=extra
     endforeach
 end
 
+function Dict::init, inputHash
+    if ~(self->hash::init()) then return, 0
+
+    if n_elements(inputHash) ne 0 then begin
+        foreach val, inputHash, key do begin
+            if ~isa(key, 'STRING') then message, 'Keys must be valid IDL names'
+            key_cleaned = strlowcase(idl_validname(key))
+            if key_cleaned eq '' then message, 'Keys must be valid IDL names'
+            self[key_cleaned] = val
+        endforeach
+        obj_destroy, inputHash
+    endif 
+
+    return, 1
+end
 
 pro Dict__define, class
     class = {Dict, inherits Hash}
         
 end
+

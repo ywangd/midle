@@ -152,6 +152,11 @@ function ExprParser::getToken
             return, self.TOKEN.T_LNOT
         end
 
+        self.char eq '=': begin
+            self.nextc
+            return, self.TOKEN.T_ASSIGN
+        end
+
         self.char eq '(': begin
             self.nextc
             return, self.TOKEN.T_LPAREN
@@ -377,6 +382,7 @@ function ExprParser::init
     self.TOKEN.T_ARROW = 332
     self.TOKEN.T_COLON = 333
     self.TOKEN.T_COMMA = 334
+    self.TOKEN.T_ASSIGN = 335
     self.TOKEN.T_LPAREN = 341
     self.TOKEN.T_RPAREN = 342
     self.TOKEN.T_LBRACKET = 343

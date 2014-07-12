@@ -2,7 +2,7 @@
 
 * Limited support for IDL expression
   + Variables, including system variables
-  + Datatypes including: 
+  + Datatypes including (Only decimal, no Hex or Oct): 
     * NULL
     * BYTE (B), INT (default, S), UINT (US), LONG (L), ULONG (UL), LONG64 (LL), ULONG64 (ULL)
     * FLOAT, DOUBLE (scientific notation included)
@@ -18,6 +18,5 @@
     * Mimimum and Maximum: <, >
     * Others: ?:, [::], (), ., ->
   + Function calls
-    * Positional and keyword type arguments
-    * Expression as argument
+    * Up to three positional arguments and unlimited input keyword arguments
 
