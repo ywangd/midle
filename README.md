@@ -19,4 +19,6 @@
     * Others: ?:, [::], (), ., ->
   + Function calls
     * Up to three positional arguments and unlimited input keyword arguments
+  + Bracket indexing (array, hash)
+    * This can be solved by the ND routines. However it is quite heavy weighted.
 
