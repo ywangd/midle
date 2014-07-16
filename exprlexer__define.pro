@@ -21,7 +21,7 @@ function isAlnum, c
 end
 
 
-pro ExprParser::nextc
+pro ExprLexer::nextc
     ; lookahead_pos is always 1 ahead of the char
     ; always return char as uppercase
     self.char = strupcase(strmid(self.buffer, self.lookahead_pos, 1))
@@ -29,17 +29,17 @@ pro ExprParser::nextc
 end
 
 
-pro ExprParser::matchc, c
+pro ExprLexer::matchc, c
     self.nextc
     if self.char ne c then self.error, 'syntax error - ' + c + ' expected'
 end
 
 
-function ExprParser::getLexeme
+function ExprLexer::getLexeme
     return, strmid(self.buffer, self.start_pos, self.lookahead_pos - 1 - self.start_pos)
 end
 
-function ExprParser::keywordLookup
+function ExprLexer::keywordLookup
     lexeme = strupcase(self.getLexeme())
     if self.keywords.haskey(lexeme) then begin
         return, self.keywords[lexeme]
@@ -48,14 +48,14 @@ function ExprParser::keywordLookup
     endelse
 end
 
-pro ExprParser::error, msg
+pro ExprLexer::error, msg
     on_error, 1
     message, string(self.lookahead_pos-1, self.char, msg, $
         format='("ERROR: column ", I0, " [", A1, "] ", A)')
 end
 
 
-function ExprParser::processScientificNotation, notation
+function ExprLexer::processScientificNotation, notation
 
     if self.char eq '+' || self.char eq '-' then begin
         self.nextc
@@ -70,7 +70,7 @@ function ExprParser::processScientificNotation, notation
 end
 
 
-function ExprParser::processFraction
+function ExprLexer::processFraction
     while isDigit(self.char) do begin
         self.nextc
     endwhile
@@ -87,7 +87,7 @@ end
 
 ; When getToken returns, self.char points to the first character in the buffer
 ; that is not processed. lookahead_pos is one position further to the right.
-function ExprParser::getToken
+function ExprLexer::getToken
 
     while isWhite(self.char) do self.nextc
 
@@ -323,26 +323,29 @@ function ExprParser::getToken
 end
 
 
-function ExprParser::parse, line
+pro ExprLexer::feed, line
     self.buffer = line
     self.lookahead_pos = 0L
     self.nextc
+end
 
-    repeat begin
-        token = self.getToken()
-        print, strupcase((self.TOKEN.where(token))[0]), self.getLexeme(), $
-            format='(A-12, A)'
-    endrep until token eq self.TOKEN.T_EOL
-
-    return, 0
+pro ExprLexer::getProperty, token=token, keywords=keywords
+    if arg_present(token) then token = self.TOKEN
+    if arg_present(keywords) then keywords = self.keywords
 end
 
 
-pro ExprParser::cleanup
+pro ExprLexer::cleanup
 end
 
 
-function ExprParser::init
+function ExprLexer::init, line
+
+    if n_elements(line) ne 0 then begin
+        self.buffer = line
+        self.lookahead_pos = 0L
+        self.nextc
+    endif
 
     self.TOKEN = Dict()
     self.TOKEN.T_EOL = 0
@@ -406,9 +409,9 @@ function ExprParser::init
 end
 
 
-pro ExprParser__define, class
+pro ExprLexer__define, class
 
-    class = {ExprParser, inherits IDL_Object, $
+    class = {ExprLexer, inherits IDL_Object, $
         buffer: '', $
         lookahead_pos: 0L, $
         char: '', $
