@@ -137,6 +137,11 @@ function ExprLexer::getToken
             return, self.TOKEN.T_MIN
         end
 
+        self.char eq '?': begin
+            self.nextc
+            return, self.TOKEN.T_QMARK
+        end
+
         self.char eq ',': begin
             self.nextc
             return, self.TOKEN.T_COMMA
@@ -175,6 +180,16 @@ function ExprLexer::getToken
         self.char eq ']': begin
             self.nextc
             return, self.TOKEN.T_RBRACKET
+        end
+
+        self.char eq '{': begin
+            self.nextc
+            return, self.TOKEN.T_LCURLY
+        end
+
+        self.char eq '}': begin
+            self.nextc
+            return, self.TOKEN.T_RCURLY
         end
 
         self.char eq '|': begin
@@ -381,6 +396,7 @@ function ExprLexer::init, line
     self.TOKEN.T_LT = 316
     self.TOKEN.T_MAX = 321
     self.TOKEN.T_MIN = 322
+    self.TOKEN.T_QMARK = 323
     self.TOKEN.T_DOT = 331
     self.TOKEN.T_ARROW = 332
     self.TOKEN.T_COLON = 333
@@ -390,6 +406,8 @@ function ExprLexer::init, line
     self.TOKEN.T_RPAREN = 342
     self.TOKEN.T_LBRACKET = 343
     self.TOKEN.T_RBRACKET = 344
+    self.TOKEN.T_LCURLY = 345
+    self.TOKEN.T_RCURLY = 346
     self.TOKEN.T_IDENT = 401
     self.TOKEN.T_SYSV = 411
 
