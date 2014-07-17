@@ -1,7 +1,7 @@
 
 function getTokenCodes
 
-    TOKEN = Dict()
+    TOKEN = Dictionary()
     TOKEN.T_EOL = 0
     TOKEN.T_NULL = 256
     TOKEN.T_BYTE = 257

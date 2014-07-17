@@ -1,9 +1,27 @@
 function ExprParser::parse_argument
-    ; argument : ternary_expr ['=' ternary_expr]
+    ; argument : ternary_expr ['=' ternary_expr] | '/' IDENT
     ; Note the keyword argument really should be ident '=' ternary_expr
     ; It is set this way to avoid ambiguity. The expr before '=' will
     ; be checked programmatically to make sure it is ident for keyword
     ; argument.
+    if self.tag eq self.TOKEN.T_DIV then begin
+        self.matchToken, self.tag
+        if self.tag eq self.TOKEN.T_IDENT then begin
+            node = KeyargNode(IdentNode(self.lexeme), NumberNode('1', 2))
+        endif else begin
+            self.error, 'identifier expected for keyword argument'
+        endelse
+    endif else begin
+        node = self.parse_ternary_expr()
+        if self.tag eq self.token.t_assign then begin
+            if ~isa(node, 'IdentNode') then self.error, 'identifier expected for keyword argument'
+            self.matchToken, self.tag
+            node = KeyargNode(node, self.parse_ternary_expr())
+        endif
+    endelse
+    
+    return, node
+    
 end
 
 function ExprParser::parse_arglist
@@ -33,16 +51,48 @@ function ExprParser::parse_deflist
     return, node
 end
 
-function ExprParser::parse_sliceop
+function ExprParser::parse_sliceop, node
     ; sliceop : ':' (ternary_expr | '*') [':' (ternary_expr | '*')]
+    self.matchToken, self.TOKEN.T_COLON
+    if self.tag eq self.token.T_MUL then begin
+        node.add, self.lexeme
+    endif else begin
+        node.add, self.parse_ternary_expr()
+    endelse
+    if self.tag eq self.TOKEN.T_COLON then begin
+        self.matchToken, self.token.t_colon
+        if self.tag eq self.token.T_MUL then begin
+            node.add, self.lexeme
+        endif else begin
+            node.add, self.parse_ternary_expr()
+        endelse
+    endif
+    return, node
 end
 
 function ExprParser::parse_idx
     ; idx : (ternary_expr | '*') [sliceop]
+    node = IndexNode()
+    if self.tag eq self.TOKEN.T_MUL then begin
+        node.add, self.lexeme
+    endif else begin
+        node.add, self.parse_ternary_expr()
+    endelse
+    if self.tag eq self.TOKEN.T_COLON then begin
+        node = self.parse_sliceop(node)
+    endif
+    return, node
 end
 
 function ExprParser::parse_idxlist
     ; idxlist : idx (, idx)*
+    node = IdxlistNode()
+    node.add, self.parse_idx()
+    while self.tag eq self.TOKEN.T_COMMA do begin
+        self.matchToken, self.tag
+        node.add, self.parse_idx()
+    endwhile
+    return, node
 end
 
 function ExprParser::parse_trailer
