@@ -362,54 +362,7 @@ function ExprLexer::init, line
         self.nextc
     endif
 
-    self.TOKEN = Dict()
-    self.TOKEN.T_EOL = 0
-    self.TOKEN.T_NULL = 256
-    self.TOKEN.T_BYTE = 257
-    self.TOKEN.T_INT =  258
-    self.TOKEN.T_UINT = 259
-    self.TOKEN.T_LONG = 260
-    self.TOKEN.T_ULONG = 261
-    self.TOKEN.T_LONG64 = 262
-    self.TOKEN.T_ULONG64 = 263
-    self.TOKEN.T_FLOAT = 264
-    self.TOKEN.T_DOUBLE = 265
-    self.TOKEN.T_STRING = 266
-    self.TOKEN.T_ADD = 271
-    self.TOKEN.T_SUB = 272
-    self.TOKEN.T_MUL = 273
-    self.TOKEN.T_DIV = 274
-    self.TOKEN.T_MOD = 275
-    self.TOKEN.T_EXP = 276
-    self.TOKEN.T_BNOT = 291
-    self.TOKEN.T_BAND = 292
-    self.TOKEN.T_BOR = 293
-    self.TOKEN.T_BXOR = 294
-    self.TOKEN.T_LNOT = 301
-    self.TOKEN.T_LAND = 302
-    self.TOKEN.T_LOR = 303
-    self.TOKEN.T_EQ = 311
-    self.TOKEN.T_NE = 312
-    self.TOKEN.T_GE = 313
-    self.TOKEN.T_GT = 314
-    self.TOKEN.T_LE = 315
-    self.TOKEN.T_LT = 316
-    self.TOKEN.T_MAX = 321
-    self.TOKEN.T_MIN = 322
-    self.TOKEN.T_QMARK = 323
-    self.TOKEN.T_DOT = 331
-    self.TOKEN.T_ARROW = 332
-    self.TOKEN.T_COLON = 333
-    self.TOKEN.T_COMMA = 334
-    self.TOKEN.T_ASSIGN = 335
-    self.TOKEN.T_LPAREN = 341
-    self.TOKEN.T_RPAREN = 342
-    self.TOKEN.T_LBRACKET = 343
-    self.TOKEN.T_RBRACKET = 344
-    self.TOKEN.T_LCURLY = 345
-    self.TOKEN.T_RCURLY = 346
-    self.TOKEN.T_IDENT = 401
-    self.TOKEN.T_SYSV = 411
+    self.TOKEN = getTokenCodes()
 
     self.keywords = Hash()
     self.keywords['MOD'] = self.TOKEN.T_MOD

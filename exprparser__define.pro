@@ -1,4 +1,4 @@
-pro ExprParser::parse_argument
+function ExprParser::parse_argument
     ; argument : ternary_expr ['=' ternary_expr]
     ; Note the keyword argument really should be ident '=' ternary_expr
     ; It is set this way to avoid ambiguity. The expr before '=' will
@@ -6,80 +6,236 @@ pro ExprParser::parse_argument
     ; argument.
 end
 
-pro ExprParser::parse_arglist
+function ExprParser::parse_arglist
     ; arglist : argument (',' argument)*
 end
 
-pro ExprParser::parse_sliceop
+function ExprParser::parse_deflist
+    ; deflist : ternary_expr : ternary_expr
+end
+
+function ExprParser::parse_sliceop
     ; sliceop : ':' (ternary_expr | '*') [':' (ternary_expr | '*')]
 end
 
-pro ExprParser::parse_idx
+function ExprParser::parse_idx
     ; idx : (ternary_expr | '*') [sliceop]
 end
 
-pro ExprParser::parse_idxlist
+function ExprParser::parse_idxlist
     ; idxlist : idx (, idx)*
 end
 
-pro ExprParser::parse_trailer
+function ExprParser::parse_trailer
     ; trailer : (arglist) | [idxlist] | '.' IDENT
 end
 
-pro ExprParser::parse_atom
-    ; atom : (...) | [...] | {...} | IDENT | NUMBER | STRING | !NULL |
+function ExprParser::parse_atom
+    ; atom : (...) | [...] | {...} | IDENT | NUMBER | STRING | !NULL
+    if self.tag eq self.TOKEN.T_LPAREN then begin
+        self.matchToken, self.tag
+        if self.tag ne self.TOKEN.T_RPAREN then begin
+            node = self.parse_ternary_expr()
+        endif else begin
+            node = NullNode('()')
+        endelse
+        self.matchToken, self.TOKEN.T_RPAREN
+    endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
+        self.matchToken, self.tag
+        if self.tag ne self.TOKEN.T_RBRACKET then begin
+            node = self.parse_idxlist()
+        endif else begin
+            node = NullNode('[]')
+        endelse
+        self.matchToken, self.TOKEN.T_RBRACKET
+    endif else if self.tag eq self.TOKEN.T_LCURLY then begin
+        self.matchToken, self.tag
+        if self.tag ne self.TOKEN.T_RCURLY then begin
+            node = self.parse_deflist()
+        endif else begin
+            node = NullNode('{}')
+        endelse
+        self.matchToken, self.TOKEN.T_RCURLY
+    endif else if self.tag eq self.TOKEN.T_IDENT then begin
+        node = IdentNode(self.lexeme)
+        self.getToken
+    endif else if (typeCode = self.numberCode(self.tag)) ne -1 then begin
+        node = NumberNode(self.lexeme, typeCode)
+        self.getToken
+    endif else if self.tag eq self.TOKEN.T_STRING then begin
+        node = StringNode(self.lexeme)
+        self.getToken
+    endif else if self.tag eq self.TOKEN.T_NULL then begin
+        node = NullNode(self.lexeme)
+        self.getToken
+    endif
+    
+    return, node
 end
 
-pro ExprParser::parse_power
+function ExprParser::parse_power
     ; power : atom trailer* ['^' factor]
+    node = self.parse_atom()
+    while self.isTrailerOperator(self.tag) do begin
+        self.matchToken, (tag = self.tag)
+        node = PlaceholderNode(tag, self.lexeme)
+        self.getToken
+    endwhile
+    if self.tag eq self.TOKEN.T_EXP then begin
+        self.matchToken, (tag = self.tag)
+        node = BinOp(tag, node, self.parse_factor())
+    endif
+    return, node
 end
 
-pro ExprParser::parse_factor
+function ExprParser::parse_factor
     ; factor : ('+' | '-' | 'NOT' | '~') factor | power
+    if self.isUnaryOperator(self.tag) then begin
+        self.matchToken, (tag = self.tag)
+        node = UnaryOp(tag, self.parse_factor())
+    endif else begin
+        node = self.parse_power()
+    endelse
+    return, node
 end
 
-pro ExprParser::parse_term_expr
+function ExprParser::parse_term_expr
     ; * / MOD # ##
+    node = self.parse_factor()
+    while self.isTermOperator(self.tag) do begin
+        self.matchToken, (tag = self.tag)
+        node = BinOp(tag, node, self.parse_factor())
+    endwhile
+    return, node
 end
 
-pro ExprParser::parse_arith_expr
+function ExprParser::parse_arith_expr
     ; + - < > 
+    node = self.parse_term_expr()
+    while self.isArithOperator(self.tag) do begin
+        self.matchToken, (tag = self.tag)
+        node = BinOp(tag, node, self.parse_term_expr())
+    endwhile
+    return, node
 end
 
-pro ExprParser::parse_relational_expr
+
+;node = PlaceholderNode(self.tag, self.lexeme)
+;self.getToken
+
+function ExprParser::parse_relational_expr
+    ; relational_expr : arith_expr (relation_op arith_expr)*
+    node = self.parse_arith_expr()
+    while self.isRelationOperator(self.tag) do begin
+        self.matchToken, (tag = self.tag)
+        node = BinOp(tag, node, self.parse_arith_expr())
+    endwhile
+    return, node
 end
 
-pro ExprParser::parse_bitwise_expr
-    ; bitwise_expr : relational_expr (bitwise_op relational_expr)
+function ExprParser::parse_bitwise_expr
+    ; bitwise_expr : relational_expr (bitwise_op relational_expr)*
     ; bitwise_op : 'AND' | 'OR' | 'XOR'
+    node = self.parse_relational_expr()
+    while self.isBitWiseOperator(self.tag) do begin
+        self.matchToken, (tag = self.tag)
+        node = BinOp(tag, node, self.parse_relational_expr())
+    endwhile
+    return, node 
 end
 
-pro ExprParser::parse_logical_expr
+function ExprParser::parse_logical_expr
     ; logical_expr : bitwise_expr (logical_op bitwise_expr)*
     ; logical_op : '&&' | '||'
+    node = self.parse_bitwise_expr()
+    while self.isLogicalOperator(self.tag) do begin
+        self.matchToken, (tag = self.tag)
+        node = BinOp(tag, node, self.parse_bitwise_expr())
+    endwhile
+    return, node
 end
 
 
-pro ExprParser::parse_ternary_expr
+function ExprParser::parse_ternary_expr
     ; ternary_expr : logical_expr ['?' logical_expr ':' logical_expr]
-    parse_logical_expr
-    self.getToken
-    if self.token eq self.lexer.TOKEN.T_QMARK then begin
-        parse_logical_expr
-        self.matchToken, self.lexer.TOKEN.T_COLON
-        parse_logical_expr
+    node = self.parse_logical_expr()
+    if self.tag eq self.TOKEN.T_QMARK then begin
+        self.matchToken, self.tag
+        node_true = self.parse_logical_expr()
+        self.matchToken, self.TOKEN.T_COLON
+        node_false = self.parse_logical_expr()
+        node = TerneryOp(node, node_true, node_false)
     endif
+    return, node
 end
 
 
-pro ExprParser::parse, line
+function ExprParser::parse, line
     self.lexer.feed, line
-    self.parse_ternary_expr
-    return, 1
+    self.getToken
+    return, self.parse_ternary_expr()
 end
+
+
+pro ExprParser::error, msg
+    message, 'ParserError: ' + msg
+end
+
+function ExprParser::numberCode, tag
+    case tag of
+        self.TOKEN.T_BYTE: typeCode = 1
+        self.TOKEN.T_INT: typeCode = 2
+        self.TOKEN.T_UINT: typeCode = 12
+        self.TOKEN.T_LONG: typeCode = 3
+        self.TOKEN.T_ULONG: typeCode = 13
+        self.TOKEN.T_LONG64: typeCode = 14
+        self.TOKEN.T_ULONG64: typeCode = 15
+        self.TOKEN.T_FLOAT: typeCode = 4
+        self.TOKEN.T_DOUBLE: typeCode = 5
+        else: typeCode = -1
+    endcase
+    return, typeCode
+end
+
+function ExprParser::isTrailerOperator, operator
+    if operator eq self.TOKEN.T_LPAREN || operator eq self.TOKEN.T_LBRACKET || operator eq self.TOKEN.T_DOT then return, 1 else return, 0
+end
+
+function ExprParser::isUnaryOperator, operator
+    if where([self.TOKEN.T_ADD, self.TOKEN.T_SUB, self.TOKEN.T_BNOT, self.TOKEN.T_LNOT] eq operator, /null) ne !NULL then return, 1 else return, 0
+end
+
+function ExprParser::isTermOperator, operator
+    if where([self.TOKEN.T_MUL, self.TOKEN.T_DIV, self.TOKEN.T_MOD, self.TOKEN.T_HASH, self.TOKEN.T_DHASH] eq operator, /null) ne !NULL then return, 1 else return, 0
+end
+
+function ExprParser::isArithOperator, operator
+    if where([self.TOKEN.T_ADD, self.TOKEN.T_SUB, self.TOKEN.T_MIN, self.TOKEN.T_MAX] eq operator, /null) ne !NULL then return, 1 else return, 0
+end
+
+function ExprParser::isRelationOperator, operator
+    if where([self.TOKEN.T_EQ, self.TOKEN.T_NE, self.TOKEN.T_GE, self.TOKEN.T_GT, self.TOKEN.T_LE, self.TOKEN.T_LT] eq operator, /null) ne !NULL then return, 1 else return, 0 
+
+end
+
+function ExprParser::isBitWiseOperator, operator
+    if operator eq self.TOKEN.T_BAND || operator eq self.TOKEN.T_BOR || operator eq self.TOKEN.T_BXOR then return, 1 else return, 0
+end
+
+function ExprParser::isLogicalOperator, operator
+    if operator eq self.TOKEN.T_LAND || operator eq self.TOKEN.T_LOR then return, 1 else return, 0
+end
+
+pro ExprParser::matchToken, tag
+    if self.tag ne tag then begin
+        self.error, self.lexeme
+    endif
+    self.getToken
+end
+
 
 pro ExprParser::getToken
-    self.token = self.lexer.getToken()
+    self.tag = self.lexer.getToken()
     self.lexeme = self.lexer.getLexeme()
 end
 
@@ -88,6 +244,7 @@ end
 
 
 function ExprParser::init
+    self.TOKEN = getTokenCodes()
     self.lexer = ExprLexer()
     return, 1
 end
@@ -95,8 +252,9 @@ end
 
 pro ExprParser__define, class
     class = {ExprParser, inherits IDL_Object, $
+        TOKEN: Obj_New(), $
         lexer: Obj_New(), $
-        token: 0,
+        tag: 0, $
         lexeme: ''}
 end
 
