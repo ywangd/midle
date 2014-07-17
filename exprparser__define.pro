@@ -8,10 +8,29 @@ end
 
 function ExprParser::parse_arglist
     ; arglist : argument (',' argument)*
+    node = ArglistNode()
+    node.add, self.parse_argument()
+    while self.tag eq self.TOKEN.T_COMMA do begin
+        self.matchToken, self.tag
+        node.add, self.parse_argument()
+    endwhile
+    return, node
 end
 
 function ExprParser::parse_deflist
-    ; deflist : ternary_expr : ternary_expr
+    ; deflist : ternary_expr : ternary_expr (',' ternary_expr : ternary_expr)
+    ; The key of Hash literal must be String or Number, this is checked during eval
+    node = ListNode(self.TOKEN.T_LCURLY)
+    node.add, self.parse_ternary_expr()
+    self.matchToken, self.TOKEN.T_COLON
+    node.add, self.parse_ternary_expr()
+    while self.tag eq self.TOKEN.T_COMMA do begin
+        self.matchToken, self.tag
+        node.add, self.parse_ternary_expr()
+        self.matchToken, self.TOKEN.T_COLON
+        node.add, self.parse_ternary_expr()
+    endwhile
+    return, node
 end
 
 function ExprParser::parse_sliceop
@@ -28,6 +47,35 @@ end
 
 function ExprParser::parse_trailer
     ; trailer : (arglist) | [idxlist] | '.' IDENT
+
+    if self.tag eq self.TOKEN.T_LPAREN then begin
+
+        self.matchToken, self.tag
+        if self.tag ne self.TOKEN.T_RPAREN then begin
+            node = self.parse_arglist()
+        endif else begin
+            node = ArglistNode()
+        endelse
+        self.matchToken, self.TOKEN.T_RPAREN
+
+    endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
+        self.matchToken, self.tag
+        if self.tag ne self.TOKEN.T_RBRACKET then begin
+            node = self.parse_idxlist()
+        endif else begin
+            node = IdxlistNode()
+        endelse
+        self.matchToken, self.TOKEN.T_RBRACKET
+
+    endif else begin ; T_DOT
+        self.matchToken, self.TOKEN.T_DOT
+        if self.tag ne self.TOKEN.T_IDENT then begin
+            self.error, 'identifier expected'
+        endif else begin
+            node = IdentNode(self.lexeme)
+        endelse
+    endelse
+    return, node
 end
 
 function ExprParser::parse_atom
@@ -35,7 +83,7 @@ function ExprParser::parse_atom
     if self.tag eq self.TOKEN.T_LPAREN then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RPAREN then begin
-            node = self.parse_ternary_expr()
+            node = self.parse_expr_list(self.TOKEN.T_LPAREN)
         endif else begin
             node = NullNode('()')
         endelse
@@ -43,7 +91,7 @@ function ExprParser::parse_atom
     endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RBRACKET then begin
-            node = self.parse_idxlist()
+            node = self.parse_expr_list(self.TOKEN.T_LBRACKET)
         endif else begin
             node = NullNode('[]')
         endelse
@@ -68,23 +116,37 @@ function ExprParser::parse_atom
     endif else if self.tag eq self.TOKEN.T_NULL then begin
         node = NullNode(self.lexeme)
         self.getToken
-    endif
-    
+    endif else begin
+        self.error, 'Unrecognized token ' + self.lexeme
+    endelse
+
     return, node
 end
 
 function ExprParser::parse_power
     ; power : atom trailer* ['^' factor]
     node = self.parse_atom()
+
     while self.isTrailerOperator(self.tag) do begin
-        self.matchToken, (tag = self.tag)
-        node = PlaceholderNode(tag, self.lexeme)
-        self.getToken
+        tag = self.tag
+        ; Note the tag is not matched here because the trailer products include
+        ; brackets etc.
+        node = self.parse_trailer()
+        if self.tag eq self.TOKEN.T_LPAREN then begin
+            node = Funccall(node, self.parse_trailer())
+        endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
+            node = Subscript(node, self.parse_trailer())
+        endif else begin ; T_DOT
+            node = Member(node, self.parse_trailer())
+        endelse
+
     endwhile
+
     if self.tag eq self.TOKEN.T_EXP then begin
         self.matchToken, (tag = self.tag)
         node = BinOp(tag, node, self.parse_factor())
     endif
+
     return, node
 end
 
@@ -110,7 +172,7 @@ function ExprParser::parse_term_expr
 end
 
 function ExprParser::parse_arith_expr
-    ; + - < > 
+    ; + - < >
     node = self.parse_term_expr()
     while self.isArithOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
@@ -118,10 +180,6 @@ function ExprParser::parse_arith_expr
     endwhile
     return, node
 end
-
-
-;node = PlaceholderNode(self.tag, self.lexeme)
-;self.getToken
 
 function ExprParser::parse_relational_expr
     ; relational_expr : arith_expr (relation_op arith_expr)*
@@ -141,7 +199,7 @@ function ExprParser::parse_bitwise_expr
         self.matchToken, (tag = self.tag)
         node = BinOp(tag, node, self.parse_relational_expr())
     endwhile
-    return, node 
+    return, node
 end
 
 function ExprParser::parse_logical_expr
@@ -169,11 +227,27 @@ function ExprParser::parse_ternary_expr
     return, node
 end
 
+function ExprParser::parse_expr_list, operator
+    ; expr_list : ternary_expr (',' ternary_expr)*
+    node = self.parse_ternary_expr()
+    while self.tag eq self.TOKEN.T_COMMA do begin
+        self.matchToken, self.tag
+        if ~isa(node, 'ListNode') then begin
+            node = ListNode(operator, node)
+        endif
+        node.add, self.parse_ternary_expr()
+    endwhile
+    return, node
+end
 
 function ExprParser::parse, line
     self.lexer.feed, line
     self.getToken
-    return, self.parse_ternary_expr()
+    node = self.parse_ternary_expr()
+    if self.tag ne self.TOKEN.T_EOL then begin
+        self.error, 'erroneous trailing characters'
+    endif
+    return, node
 end
 
 
@@ -214,7 +288,7 @@ function ExprParser::isArithOperator, operator
 end
 
 function ExprParser::isRelationOperator, operator
-    if where([self.TOKEN.T_EQ, self.TOKEN.T_NE, self.TOKEN.T_GE, self.TOKEN.T_GT, self.TOKEN.T_LE, self.TOKEN.T_LT] eq operator, /null) ne !NULL then return, 1 else return, 0 
+    if where([self.TOKEN.T_EQ, self.TOKEN.T_NE, self.TOKEN.T_GE, self.TOKEN.T_GT, self.TOKEN.T_LE, self.TOKEN.T_LT] eq operator, /null) ne !NULL then return, 1 else return, 0
 
 end
 
@@ -252,8 +326,8 @@ end
 
 pro ExprParser__define, class
     class = {ExprParser, inherits IDL_Object, $
-        TOKEN: Obj_New(), $
-        lexer: Obj_New(), $
+        TOKEN: obj_new(), $
+        lexer: obj_new(), $
         tag: 0, $
         lexeme: ''}
 end

@@ -2,7 +2,7 @@
 
 
 function UnaryOp::eval, env
-    TOKEN = env.TOKEN
+    TOKEN = env.__TOKEN__
     val = self.operands[0].eval(env)
     case self.operator of
         TOKEN.T_ADD: 
@@ -11,6 +11,7 @@ function UnaryOp::eval, env
         TOKEN.T_BNOT: val = not val
         else: self.error, 'Unrecognized operator ' + self.operator
     endcase
+    return, val
 end
 
 function UnaryOp::print_helper
@@ -20,7 +21,7 @@ end
 function UnaryOp::init, operator, node
     if ~self->AstNode::init() then return, 0
     self.operator = operator
-    self.operands.add, /node
+    self.operands.add, node
     return, 1
 end
 

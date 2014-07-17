@@ -1,6 +1,6 @@
 
 pro AstNode::error, msg
-    message, string(self.colno, msg, format='("[Column "], I0, "] ", A)')
+    message, string(self.colno, msg, format='("[Col ", I0, "] ", A)')
 end
 
 
@@ -17,6 +17,9 @@ function AstNode::print_helper
     return, typename(self)
 end
 
+function AstNode::_overloadImpliedPrint, varname, sublevel
+    return, self._overloadPrint(sublevel)
+end
 
 function AstNode::_overloadPrint, sublevel
     if n_elements(sublevel) eq 0 then sublevel = 0
