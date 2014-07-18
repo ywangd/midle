@@ -4,7 +4,7 @@ function NullNode::eval, env
 end
 
 function NullNode::print_helper
-    return, string('NULL', self.lexeme, format='(A, " ''",A,"''")')
+    return, string(self.name(), self.lexeme, format='(A, " ''",A,"''")')
 end
 
 

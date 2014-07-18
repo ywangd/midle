@@ -4,7 +4,7 @@ function StringNode::eval, env
 end
 
 function StringNode::print_helper
-    return, string('STRING', self.lexeme, format='(A, " ''",A,"''")')
+    return, string(self.name(), self.lexeme, format='(A, " ''",A,"''")')
 end
 
 

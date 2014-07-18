@@ -1,6 +1,6 @@
 
 function IdxlistNode::print_helper
-    return, string(typename(self), self.operands.count(), format='(A, " ''",I0,"''")')
+    return, string(self.name(), self.operands.count(), format='(A, " ''",I0,"''")')
 end
 
 

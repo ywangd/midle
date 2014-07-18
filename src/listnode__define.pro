@@ -36,7 +36,7 @@ function ListNode::eval, env
 end
 
 function ListNode::print_helper
-    return, string(typename(self), strupcase(self.TOKEN.where(self.operator)), format='(A, " ''",A,"''")')
+    return, string(self.name(), strupcase(self.TOKEN.where(self.operator)), format='(A, " ''",A,"''")')
 end
 
 

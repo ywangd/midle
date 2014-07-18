@@ -1,7 +1,7 @@
 
 
 
-function BinOp::eval, env
+function BinOpNode::eval, env
     TOKEN = self.TOKEN
     val1 = self.operands[0].eval(env)
     val2 = self.operands[1].eval(env)
@@ -33,13 +33,13 @@ function BinOp::eval, env
 end
 
 
-function BinOp::print_helper
-    return, string(typename(self), strupcase(self.TOKEN.where(self.operator)), $
+function BinOpNode::print_helper
+    return, string(self.name(), strupcase(self.TOKEN.where(self.operator)), $
         format='(A, " ''",A,"''")')
 end
 
 
-function BinOp::init, start_pos, operator, lnode, rnode
+function BinOpNode::init, start_pos, operator, lnode, rnode
     if ~self->AstNode::init(start_pos) then return, 0
     self.operator = operator
     self.operands.add, lnode
@@ -47,7 +47,7 @@ function BinOp::init, start_pos, operator, lnode, rnode
     return, 1
 end
 
-pro BinOp__define, class
-    class = {BinOp, inherits AstNode, $
+pro BinOpNode__define, class
+    class = {BinOpNode, inherits AstNode, $
         operator: ''}
 end

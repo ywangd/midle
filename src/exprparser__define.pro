@@ -185,18 +185,18 @@ function ExprParser::parse_power
         ; brackets etc.
         node = self.parse_trailer()
         if self.tag eq self.TOKEN.T_LPAREN then begin
-            node = Funccall(self.lexer.start_pos, node, self.parse_trailer())
+            node = FuncCallNode(self.lexer.start_pos, node, self.parse_trailer())
         endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
-            node = Subscript(self.lexer.start_pos, node, self.parse_trailer())
+            node = SubscriptNode(self.lexer.start_pos, node, self.parse_trailer())
         endif else begin ; T_DOT
-            node = Member(self.lexer.start_pos, node, self.parse_trailer())
+            node = MemberNode(self.lexer.start_pos, node, self.parse_trailer())
         endelse
 
     endwhile
 
     if self.tag eq self.TOKEN.T_EXP then begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(self.lexer.start_pos, tag, node, self.parse_factor())
+        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_factor())
     endif
 
     return, node
@@ -206,7 +206,7 @@ function ExprParser::parse_factor
     ; factor : ('+' | '-' | 'NOT' | '~') factor | power
     if self.isUnaryOperator(self.tag) then begin
         self.matchToken, (tag = self.tag)
-        node = UnaryOp(self.lexer.start_pos, tag, self.parse_factor())
+        node = UnaryOpNode(self.lexer.start_pos, tag, self.parse_factor())
     endif else begin
         node = self.parse_power()
     endelse
@@ -218,7 +218,7 @@ function ExprParser::parse_term_expr
     node = self.parse_factor()
     while self.isTermOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(self.lexer.start_pos, tag, node, self.parse_factor())
+        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_factor())
     endwhile
     return, node
 end
@@ -228,7 +228,7 @@ function ExprParser::parse_arith_expr
     node = self.parse_term_expr()
     while self.isArithOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(self.lexer.start_pos, tag, node, self.parse_term_expr())
+        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_term_expr())
     endwhile
     return, node
 end
@@ -238,7 +238,7 @@ function ExprParser::parse_relational_expr
     node = self.parse_arith_expr()
     while self.isRelationOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(self.lexer.start_pos, tag, node, self.parse_arith_expr())
+        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_arith_expr())
     endwhile
     return, node
 end
@@ -249,7 +249,7 @@ function ExprParser::parse_bitwise_expr
     node = self.parse_relational_expr()
     while self.isBitWiseOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(self.lexer.start_pos, tag, node, self.parse_relational_expr())
+        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_relational_expr())
     endwhile
     return, node
 end
@@ -260,7 +260,7 @@ function ExprParser::parse_logical_expr
     node = self.parse_bitwise_expr()
     while self.isLogicalOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(self.lexer.start_pos, tag, node, self.parse_bitwise_expr())
+        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_bitwise_expr())
     endwhile
     return, node
 end
@@ -274,7 +274,7 @@ function ExprParser::parse_ternary_expr
         node_true = self.parse_logical_expr()
         self.matchToken, self.TOKEN.T_COLON
         node_false = self.parse_logical_expr()
-        node = TerneryOp(self.lexer.start_pos, node, node_true, node_false)
+        node = TerneryOpNode(self.lexer.start_pos, node, node_true, node_false)
     endif
     return, node
 end

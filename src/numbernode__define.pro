@@ -5,7 +5,7 @@ function NumberNode::eval, env
 end
 
 function NumberNode::print_helper
-    return, string('NUMBER', self.lexeme, format='(A, " ''",A,"''")')
+    return, string(self.name(), self.lexeme, format='(A, " ''",A,"''")')
 end
 
 function NumberNode::init, start_pos, lexeme, typeCode

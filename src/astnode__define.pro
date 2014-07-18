@@ -8,13 +8,19 @@ function AstNode::eval, env
     message, 'This method must be overidden'
 end
 
+function AstNode::name
+    name = strupcase(typename(self))
+    idx = strpos(name, 'NODE')
+    if idx ge 0 then name = strmid(name, 0, idx)
+    return, name
+end
 
 pro AstNode::add, node
     self.operands.add, node
 end
 
 function AstNode::print_helper
-    return, typename(self)
+    return, self.name()
 end
 
 function AstNode::_overloadImpliedPrint, varname, sublevel

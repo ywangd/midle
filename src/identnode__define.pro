@@ -5,7 +5,7 @@ function IdentNode::eval, env
 end
 
 function IdentNode::print_helper
-    return, string('IDENT', self.lexeme, format='(A, " ''",A,"''")')
+    return, string(self.name(), self.lexeme, format='(A, " ''",A,"''")')
 end
 
 

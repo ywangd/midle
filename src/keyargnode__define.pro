@@ -1,6 +1,6 @@
 
 function KeyargNode::print_helper
-    return, string(typename(self), self.operands[0], format='(A, " ''",A,"''")')
+    return, string(self.name(), self.operands[0], format='(A, " ''",A,"''")')
 end
 
 
