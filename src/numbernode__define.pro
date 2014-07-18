@@ -8,8 +8,8 @@ function NumberNode::print_helper
     return, string('NUMBER', self.lexeme, format='(A, " ''",A,"''")')
 end
 
-function NumberNode::init, lexeme, typeCode
-    if ~self->AstNode::init() then return, 0
+function NumberNode::init, start_pos, lexeme, typeCode
+    if ~self->AstNode::init(start_pos) then return, 0
     self.lexeme = lexeme
     self.typeCode = typeCode
     return, 1

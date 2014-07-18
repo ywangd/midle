@@ -4,8 +4,8 @@ function Funccall::print_helper
 end
 
 
-function Funccall::init, func, arglist
-    if ~self->AstNode::init() then return, 0
+function Funccall::init, start_pos, func, arglist
+    if ~self->AstNode::init(start_pos) then return, 0
     self.operands.add, func
     self.operands.add, arglist
     return, 1

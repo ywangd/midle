@@ -8,8 +8,8 @@ function NullNode::print_helper
 end
 
 
-function NullNode::init, lexeme
-    if ~self->AstNode::init() then return, 0
+function NullNode::init, start_pos, lexeme
+    if ~self->AstNode::init(start_pos) then return, 0
     self.lexeme = lexeme
     return, 1
 end

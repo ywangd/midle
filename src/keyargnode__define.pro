@@ -4,8 +4,8 @@ function KeyargNode::print_helper
 end
 
 
-function KeyargNode::init
-    if ~self->AstNode::init() then return, 0
+function KeyargNode::init, start_pos
+    if ~self->AstNode::init(start_pos) then return, 0
     return, 1
 end
 

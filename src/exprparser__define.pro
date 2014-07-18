@@ -1,3 +1,4 @@
+
 function ExprParser::parse_argument
     ; argument : ternary_expr ['=' ternary_expr] | '/' IDENT
     ; Note the keyword argument really should be ident '=' ternary_expr
@@ -7,7 +8,8 @@ function ExprParser::parse_argument
     if self.tag eq self.TOKEN.T_DIV then begin
         self.matchToken, self.tag
         if self.tag eq self.TOKEN.T_IDENT then begin
-            node = KeyargNode(IdentNode(self.lexeme), NumberNode('1', 2))
+            node = KeyargNode(self.lexer.start_pos, $
+                IdentNode(self.lexer.start_pos, self.lexeme), NumberNode(self.lexer.start_pos, '1', 2))
         endif else begin
             self.error, 'identifier expected for keyword argument'
         endelse
@@ -16,7 +18,7 @@ function ExprParser::parse_argument
         if self.tag eq self.token.t_assign then begin
             if ~isa(node, 'IdentNode') then self.error, 'identifier expected for keyword argument'
             self.matchToken, self.tag
-            node = KeyargNode(node, self.parse_ternary_expr())
+            node = KeyargNode(self.lexer.start_pos, node, self.parse_ternary_expr())
         endif
     endelse
     
@@ -26,7 +28,7 @@ end
 
 function ExprParser::parse_arglist
     ; arglist : argument (',' argument)*
-    node = ArglistNode()
+    node = ArglistNode(self.lexer.start_pos)
     node.add, self.parse_argument()
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
@@ -38,7 +40,7 @@ end
 function ExprParser::parse_deflist
     ; deflist : ternary_expr : ternary_expr (',' ternary_expr : ternary_expr)
     ; The key of Hash literal must be String or Number, this is checked during eval
-    node = ListNode(self.TOKEN.T_LCURLY)
+    node = ListNode(self.lexer.start_pos, self.TOKEN.T_LCURLY)
     node.add, self.parse_ternary_expr()
     self.matchToken, self.TOKEN.T_COLON
     node.add, self.parse_ternary_expr()
@@ -72,7 +74,7 @@ end
 
 function ExprParser::parse_idx
     ; idx : (ternary_expr | '*') [sliceop]
-    node = IndexNode()
+    node = IndexNode(self.lexer.start_pos)
     if self.tag eq self.TOKEN.T_MUL then begin
         node.add, self.lexeme
     endif else begin
@@ -86,7 +88,7 @@ end
 
 function ExprParser::parse_idxlist
     ; idxlist : idx (, idx)*
-    node = IdxlistNode()
+    node = IdxlistNode(self.lexer.start_pos)
     node.add, self.parse_idx()
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
@@ -104,7 +106,7 @@ function ExprParser::parse_trailer
         if self.tag ne self.TOKEN.T_RPAREN then begin
             node = self.parse_arglist()
         endif else begin
-            node = ArglistNode()
+            node = ArglistNode(self.lexer.start_pos)
         endelse
         self.matchToken, self.TOKEN.T_RPAREN
 
@@ -113,7 +115,7 @@ function ExprParser::parse_trailer
         if self.tag ne self.TOKEN.T_RBRACKET then begin
             node = self.parse_idxlist()
         endif else begin
-            node = IdxlistNode()
+            node = IdxlistNode(self.lexer.start_pos)
         endelse
         self.matchToken, self.TOKEN.T_RBRACKET
 
@@ -122,7 +124,7 @@ function ExprParser::parse_trailer
         if self.tag ne self.TOKEN.T_IDENT then begin
             self.error, 'identifier expected'
         endif else begin
-            node = IdentNode(self.lexeme)
+            node = IdentNode(self.lexer.start_pos, self.lexeme)
         endelse
     endelse
     return, node
@@ -135,7 +137,7 @@ function ExprParser::parse_atom
         if self.tag ne self.TOKEN.T_RPAREN then begin
             node = self.parse_expr_list(self.TOKEN.T_LPAREN)
         endif else begin
-            node = NullNode('()')
+            node = NullNode(self.lexer.start_pos, '()')
         endelse
         self.matchToken, self.TOKEN.T_RPAREN
     endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
@@ -143,7 +145,7 @@ function ExprParser::parse_atom
         if self.tag ne self.TOKEN.T_RBRACKET then begin
             node = self.parse_expr_list(self.TOKEN.T_LBRACKET)
         endif else begin
-            node = NullNode('[]')
+            node = NullNode(self.lexer.start_pos, '[]')
         endelse
         self.matchToken, self.TOKEN.T_RBRACKET
     endif else if self.tag eq self.TOKEN.T_LCURLY then begin
@@ -151,20 +153,20 @@ function ExprParser::parse_atom
         if self.tag ne self.TOKEN.T_RCURLY then begin
             node = self.parse_deflist()
         endif else begin
-            node = NullNode('{}')
+            node = NullNode(self.lexer.start_pos, '{}')
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
     endif else if self.tag eq self.TOKEN.T_IDENT then begin
-        node = IdentNode(self.lexeme)
+        node = IdentNode(self.lexer.start_pos, self.lexeme)
         self.getToken
     endif else if (typeCode = self.numberCode(self.tag)) ne -1 then begin
-        node = NumberNode(self.lexeme, typeCode)
+        node = NumberNode(self.lexer.start_pos, self.lexeme, typeCode)
         self.getToken
     endif else if self.tag eq self.TOKEN.T_STRING then begin
-        node = StringNode(self.lexeme)
+        node = StringNode(self.lexer.start_pos, self.lexeme)
         self.getToken
     endif else if self.tag eq self.TOKEN.T_NULL then begin
-        node = NullNode(self.lexeme)
+        node = NullNode(self.lexer.start_pos, self.lexeme)
         self.getToken
     endif else begin
         self.error, 'Unrecognized token ' + self.lexeme
@@ -183,18 +185,18 @@ function ExprParser::parse_power
         ; brackets etc.
         node = self.parse_trailer()
         if self.tag eq self.TOKEN.T_LPAREN then begin
-            node = Funccall(node, self.parse_trailer())
+            node = Funccall(self.lexer.start_pos, node, self.parse_trailer())
         endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
-            node = Subscript(node, self.parse_trailer())
+            node = Subscript(self.lexer.start_pos, node, self.parse_trailer())
         endif else begin ; T_DOT
-            node = Member(node, self.parse_trailer())
+            node = Member(self.lexer.start_pos, node, self.parse_trailer())
         endelse
 
     endwhile
 
     if self.tag eq self.TOKEN.T_EXP then begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(tag, node, self.parse_factor())
+        node = BinOp(self.lexer.start_pos, tag, node, self.parse_factor())
     endif
 
     return, node
@@ -204,7 +206,7 @@ function ExprParser::parse_factor
     ; factor : ('+' | '-' | 'NOT' | '~') factor | power
     if self.isUnaryOperator(self.tag) then begin
         self.matchToken, (tag = self.tag)
-        node = UnaryOp(tag, self.parse_factor())
+        node = UnaryOp(self.lexer.start_pos, tag, self.parse_factor())
     endif else begin
         node = self.parse_power()
     endelse
@@ -216,7 +218,7 @@ function ExprParser::parse_term_expr
     node = self.parse_factor()
     while self.isTermOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(tag, node, self.parse_factor())
+        node = BinOp(self.lexer.start_pos, tag, node, self.parse_factor())
     endwhile
     return, node
 end
@@ -226,7 +228,7 @@ function ExprParser::parse_arith_expr
     node = self.parse_term_expr()
     while self.isArithOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(tag, node, self.parse_term_expr())
+        node = BinOp(self.lexer.start_pos, tag, node, self.parse_term_expr())
     endwhile
     return, node
 end
@@ -236,7 +238,7 @@ function ExprParser::parse_relational_expr
     node = self.parse_arith_expr()
     while self.isRelationOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(tag, node, self.parse_arith_expr())
+        node = BinOp(self.lexer.start_pos, tag, node, self.parse_arith_expr())
     endwhile
     return, node
 end
@@ -247,7 +249,7 @@ function ExprParser::parse_bitwise_expr
     node = self.parse_relational_expr()
     while self.isBitWiseOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(tag, node, self.parse_relational_expr())
+        node = BinOp(self.lexer.start_pos, tag, node, self.parse_relational_expr())
     endwhile
     return, node
 end
@@ -258,7 +260,7 @@ function ExprParser::parse_logical_expr
     node = self.parse_bitwise_expr()
     while self.isLogicalOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOp(tag, node, self.parse_bitwise_expr())
+        node = BinOp(self.lexer.start_pos, tag, node, self.parse_bitwise_expr())
     endwhile
     return, node
 end
@@ -272,7 +274,7 @@ function ExprParser::parse_ternary_expr
         node_true = self.parse_logical_expr()
         self.matchToken, self.TOKEN.T_COLON
         node_false = self.parse_logical_expr()
-        node = TerneryOp(node, node_true, node_false)
+        node = TerneryOp(self.lexer.start_pos, node, node_true, node_false)
     endif
     return, node
 end
@@ -283,7 +285,7 @@ function ExprParser::parse_expr_list, operator
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
         if ~isa(node, 'ListNode') then begin
-            node = ListNode(operator, node)
+            node = ListNode(self.lexer.start_pos, operator, node)
         endif
         node.add, self.parse_ternary_expr()
     endwhile

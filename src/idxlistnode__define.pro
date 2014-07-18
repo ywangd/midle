@@ -4,8 +4,8 @@ function IdxlistNode::print_helper
 end
 
 
-function IdxlistNode::init
-    if ~self->AstNode::init() then return, 0
+function IdxlistNode::init, start_pos
+    if ~self->AstNode::init(start_pos) then return, 0
     return, 1
 end
 

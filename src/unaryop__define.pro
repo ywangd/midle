@@ -2,7 +2,7 @@
 
 
 function UnaryOp::eval, env
-    TOKEN = env.__TOKEN__
+    TOKEN = self.TOKEN
     val = self.operands[0].eval(env)
     case self.operator of
         TOKEN.T_ADD: 
@@ -15,11 +15,12 @@ function UnaryOp::eval, env
 end
 
 function UnaryOp::print_helper
-    return, string(typename(self), self.operator, format='(A, " ''",I0,"''")')
+    return, string(typename(self), strupcase(self.TOKEN.where(self.operator)), $
+        format='(A, " ''",A,"''")')
 end
 
-function UnaryOp::init, operator, node
-    if ~self->AstNode::init() then return, 0
+function UnaryOp::init, start_pos, operator, node
+    if ~self->AstNode::init(start_pos) then return, 0
     self.operator = operator
     self.operands.add, node
     return, 1

@@ -4,8 +4,8 @@ function Member::print_helper
 end
 
 
-function Member::init, object, name
-    if ~self->AstNode::init() then return, 0
+function Member::init, start_pos, object, name
+    if ~self->AstNode::init(start_pos) then return, 0
     self.operands.add, object
     self.operands.add, name
     return, 1

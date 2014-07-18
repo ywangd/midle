@@ -4,8 +4,8 @@ function IndexNode::print_helper
 end
 
 
-function IndexNode::init
-    if ~self->AstNode::init() then return, 0
+function IndexNode::init, start_pos
+    if ~self->AstNode::init(start_pos) then return, 0
     return, 1
 end
 

@@ -1,7 +1,7 @@
 
 
 function ListNode::eval, env
-    TOKEN = env.__TOKEN__
+    TOKEN = self.TOKEN
     
     theList = list()
     foreach operand, self.operands do begin
@@ -36,12 +36,12 @@ function ListNode::eval, env
 end
 
 function ListNode::print_helper
-    return, string(typename(self), self.operator, format='(A, " ''",A,"''")')
+    return, string(typename(self), strupcase(self.TOKEN.where(self.operator)), format='(A, " ''",A,"''")')
 end
 
 
-function ListNode::init, operator, node
-    if ~self->AstNode::init() then return, 0
+function ListNode::init, start_pos, operator, node
+    if ~self->AstNode::init(start_pos) then return, 0
     self.operator = operator
     if n_elements(node) ne 0 then self.operands.add, node
     return, 1

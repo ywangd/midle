@@ -344,9 +344,11 @@ pro ExprLexer::feed, line
     self.nextc
 end
 
-pro ExprLexer::getProperty, token=token, keywords=keywords
-    if arg_present(token) then token = self.TOKEN
-    if arg_present(keywords) then keywords = self.keywords
+
+pro ExprLexer::getProperty, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos
+    lookahead_pos = self.lookahead_pos
+    char = self.char
+    start_pos = self.start_pos
 end
 
 

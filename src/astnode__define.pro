@@ -38,28 +38,19 @@ end
 pro AstNode::cleanup
 end
 
-function AstNode::init
+function AstNode::init, start_pos
     if ~self->IDL_Object::init() then return, 0
+    self.colno = start_pos
+    self.TOKEN = getTokenCodes()
     self.operands = list()
     return, 1
 end
 
 pro AstNode__define, class
     class = {AstNode, inherits IDL_Object, $
+        TOKEN: obj_new(), $
         operands: obj_new(), $
         lineno: 0L, $
         colno: 0L }
 end
 
-
-a = astnode()
-a.add, astnode()
-b = binop('+')
-b.add, astnode()
-c = astnode()
-c.add, astnode()
-b.add, c
-a.add, b
-a.add, astnode()
-print, a
-end
