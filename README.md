@@ -28,6 +28,10 @@
 * Added (incompatible) Features
     * Chaining method calls without extra paranthesis, e.g. a().x(), a.b().x()
     * Chaining subscripts without extra paranthesis, e.g. a[5:*][2:9]
+    * Higher level array concatenation. IDL only supports three levels. 
+        - For an example, `[[[[1]]],[[[2]]]]` is not allowed by IDL, while it
+          is legal for the interpreter and evaluates to a array of shape
+          [1,1,1,2]
     * {key: val, ...} for building Hash literals
     * (val1, val2, ...) for building List literals
         - Note a comma is needed at the end of the list to create an one-element
