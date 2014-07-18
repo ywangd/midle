@@ -1,6 +1,10 @@
 
 function StringNode::eval, env
-    return, strmid(self.lexeme, 1, strlen(self.lexeme)-2)
+    val = strmid(self.lexeme, 1, strlen(self.lexeme)-2)
+    ; process escaped quotes
+    quote = strmid(self.lexeme, 0, 1)
+    escape = quote + quote
+    return, strjoin(strsplit(val, escape, /extract, /regex, /preserve_null), quote) 
 end
 
 function StringNode::print_helper

@@ -59,13 +59,15 @@ function ExprLexer::processScientificNotation, notation
 
     if self.char eq '+' || self.char eq '-' then begin
         self.nextc
+        ; If + or - is seen, a digit is required to follow.
+        ; Otherwise digit is optional as 42D or 42E are both valid.
         if ~isDigit(self.char) then self.error, "Digits expected"
     endif
-
+    
     while isDigit(self.char) do begin
         self.nextc
     endwhile
-
+    
     if notation eq 'E' then return, self.TOKEN.T_FLOAT else return, self.TOKEN.T_DOUBLE
 end
 
@@ -76,8 +78,9 @@ function ExprLexer::processFraction
     endwhile
 
     if strupcase(self.char) eq 'E' || strupcase(self.char) eq 'D' then begin
+        notation = strupcase(self.char)
         self.nextc
-        return, self.processScientificNotation(strupcase(self.char))
+        return, self.processScientificNotation(notation)
     endif
 
     return, self.TOKEN.T_FLOAT
@@ -322,7 +325,7 @@ function ExprLexer::getToken
                 while 1 do begin
                     self.nextc
                     if ~(isAlnum(self.char) || self.char eq '_') then begin
-                        return, self.TOKEN.T_SYSV
+                        if self.getLexeme() eq '!NULL' then return, self.TOKEN.T_NULL else return, self.TOKEN.T_SYSV
                     endif
                 endwhile
             endif else begin

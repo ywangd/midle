@@ -14,8 +14,8 @@ function ArglistNode::print_helper
 end
 
 
-function ArglistNode::init
-    if ~self->AstNode::init() then return, 0
+function ArglistNode::init, start_pos
+    if ~self->AstNode::init(start_pos) then return, 0
     return, 1
 end
 

@@ -11,14 +11,24 @@ function ListNode::eval, env
     catch, theError
     if theError ne 0 then begin
         catch, /cancel
-        if !error_state.name eq 'IDL_M_USER_ERR' then begin
+        if !error_state.name eq 'IDL_M_TYPCNVERR' then begin
             self.error, 'Array elements cannot be converted to the same type'
         endif
     endif
     
     if self.operator eq TOKEN.T_LBRACKET then begin
-        theList = theList.toArray()
+        
+        ; Manually concatenate the array instead of using theList.toArray()
+        ; because the function call convert everything to the type of the
+        ; first element. So if the first element is int and second is float,
+        ; the final product is an int array, which is wrong.
+        ret = []
+        foreach item, theList do begin
+            ret = [ret, item]
+        endforeach
+        
     endif else if self.operator eq TOKEN.T_LCURLY then begin
+        
         ret = hash()
         for i = 0, theList.count()-1, 2 do begin
             key = theList[i]
@@ -29,10 +39,12 @@ function ListNode::eval, env
                 self.error, 'Invalid Hash key ' + strtrim(key,2)
             endelse
         endfor
-        return, ret
-    endif
+        
+    endif else begin
+        ret = theList
+    endelse
     
-    return, theList
+    return, ret
 end
 
 function ListNode::print_helper

@@ -38,7 +38,7 @@ function ExprParser::parse_arglist
 end
 
 function ExprParser::parse_deflist
-    ; deflist : ternary_expr : ternary_expr (',' ternary_expr : ternary_expr)
+    ; deflist : ternary_expr : ternary_expr (',' ternary_expr : ternary_expr) [',']
     ; The key of Hash literal must be String or Number, this is checked during eval
     node = ListNode(self.lexer.start_pos, self.TOKEN.T_LCURLY)
     node.add, self.parse_ternary_expr()
@@ -46,9 +46,12 @@ function ExprParser::parse_deflist
     node.add, self.parse_ternary_expr()
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
-        node.add, self.parse_ternary_expr()
-        self.matchToken, self.TOKEN.T_COLON
-        node.add, self.parse_ternary_expr()
+        ; An optional comma at the end
+        if self.tag ne self.TOKEN.T_RCURLY then begin
+            node.add, self.parse_ternary_expr()
+            self.matchToken, self.TOKEN.T_COLON
+            node.add, self.parse_ternary_expr()
+        endif else break
     endwhile
     return, node
 end
@@ -131,19 +134,19 @@ function ExprParser::parse_trailer
 end
 
 function ExprParser::parse_atom
-    ; atom : (...) | [...] | {...} | IDENT | NUMBER | STRING | !NULL
+    ; atom : (...) | [...] | {...} | IDENT | NUMBER | STRING | !NULL | SYSVAR
     if self.tag eq self.TOKEN.T_LPAREN then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RPAREN then begin
-            node = self.parse_expr_list(self.TOKEN.T_LPAREN)
+            node = self.parse_expr_list(self.TOKEN.T_LPAREN, self.TOKEN.T_RPAREN)
         endif else begin
-            node = NullNode(self.lexer.start_pos, '()')
+            node = ListNode(self.lexer.start_pos, self.TOKEN.T_LPAREN)
         endelse
         self.matchToken, self.TOKEN.T_RPAREN
     endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RBRACKET then begin
-            node = self.parse_expr_list(self.TOKEN.T_LBRACKET)
+            node = self.parse_expr_list(self.TOKEN.T_LBRACKET, self.TOKEN.T_RBRACKET, /ensureList)
         endif else begin
             node = NullNode(self.lexer.start_pos, '[]')
         endelse
@@ -153,7 +156,7 @@ function ExprParser::parse_atom
         if self.tag ne self.TOKEN.T_RCURLY then begin
             node = self.parse_deflist()
         endif else begin
-            node = NullNode(self.lexer.start_pos, '{}')
+            node = ListNode(self.lexer.start_pos, self.TOKEN.T_LCURLY)
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
     endif else if self.tag eq self.TOKEN.T_IDENT then begin
@@ -167,6 +170,9 @@ function ExprParser::parse_atom
         self.getToken
     endif else if self.tag eq self.TOKEN.T_NULL then begin
         node = NullNode(self.lexer.start_pos, self.lexeme)
+        self.getToken
+    endif else if self.tag eq self.TOKEN.T_SYSV then begin
+        node = SysvarNode(self.lexer.start_pos, self.lexeme)
         self.getToken
     endif else begin
         self.error, 'Unrecognized token ' + self.lexeme
@@ -279,22 +285,37 @@ function ExprParser::parse_ternary_expr
     return, node
 end
 
-function ExprParser::parse_expr_list, operator
-    ; expr_list : ternary_expr (',' ternary_expr)*
+function ExprParser::parse_expr_list, ldelimiter, rdelimiter, ensureList=ensureList
+    ; expr_list : ternary_expr (',' ternary_expr)* [',']
+    
     node = self.parse_ternary_expr()
+    
+    ; Normally, the node is converted to a list only when mulitple expr exist or a
+    ; comma appears at the end. This is to ensure (1) is a number but (1,) is a list.
+    ; If ensureList is set, the node is enforced to be a list. This is required for 
+    ; hanlding IDL array literals so that [1] is an array.  
+    if keyword_set(ensureList) then node = ListNode(self.lexer.start_pos, ldelimiter, node)
+    
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
         if ~isa(node, 'ListNode') then begin
-            node = ListNode(self.lexer.start_pos, operator, node)
+            node = ListNode(self.lexer.start_pos, ldelimiter, node)
         endif
-        node.add, self.parse_ternary_expr()
+        ; An optional comma is allowed at the end. This is important as it is required
+        ; to defferiate whether the code is a number (1) or a list (1,)
+        if self.tag ne rdelimiter then node.add, self.parse_ternary_expr() else break
     endwhile
+    
     return, node
 end
 
+
+; At the end of each parse function, self.tag always points to the next
+; un-processed token.
 function ExprParser::parse, line
     self.lexer.feed, line
     self.getToken
+    if self.tag eq self.TOKEN.T_EOL then message, 'no code found'
     node = self.parse_ternary_expr()
     if self.tag ne self.TOKEN.T_EOL then begin
         self.error, 'erroneous trailing characters'

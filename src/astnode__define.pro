@@ -41,6 +41,12 @@ function AstNode::_overloadPrint, sublevel
     return, sublevel eq 0 ? transpose(ret) : ret
 end
 
+pro AstNode::getProperty, lineno=lineno, colno=colno
+    lineno = self.lineno
+    colno = self.colno
+end
+
+
 pro AstNode::cleanup
 end
 
