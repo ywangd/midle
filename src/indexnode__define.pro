@@ -1,6 +1,6 @@
 
 function IndexNode::print_helper
-    return, string(self.name(), self.operands.count(), format='(A, " ''",I0,"''")')
+    return, self.name()
 end
 
 

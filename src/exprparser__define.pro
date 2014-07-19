@@ -59,15 +59,17 @@ end
 function ExprParser::parse_sliceop, node
     ; sliceop : ':' (ternary_expr | '*') [':' (ternary_expr | '*')]
     self.matchToken, self.TOKEN.T_COLON
-    if self.tag eq self.token.T_MUL then begin
-        node.add, self.lexeme
+    if self.tag eq self.TOKEN.T_MUL then begin
+        node.add, WildcardNode(self.lexer.start_pos, self.lexeme)
+        self.matchToken, self.TOKEN.T_MUL
     endif else begin
         node.add, self.parse_ternary_expr()
     endelse
     if self.tag eq self.TOKEN.T_COLON then begin
         self.matchToken, self.token.t_colon
-        if self.tag eq self.token.T_MUL then begin
-            node.add, self.lexeme
+        if self.tag eq self.TOKEN.T_MUL then begin
+            node.add, WildcardNode(self.lexer.start_pos, self.lexeme)
+            self.matchToken, self.TOKEN.T_MUL
         endif else begin
             node.add, self.parse_ternary_expr()
         endelse
@@ -77,9 +79,11 @@ end
 
 function ExprParser::parse_idx
     ; idx : (ternary_expr | '*') [sliceop]
+    ; The indices must be integers. Ths is ensured during eval.
     node = IndexNode(self.lexer.start_pos)
     if self.tag eq self.TOKEN.T_MUL then begin
-        node.add, self.lexeme
+        node.add, WildcardNode(self.lexer.start_pos, self.lexeme)
+        self.matchToken, self.tag
     endif else begin
         node.add, self.parse_ternary_expr()
     endelse
@@ -146,7 +150,7 @@ function ExprParser::parse_trailer
         if self.tag ne self.TOKEN.T_RBRACKET then begin
             node = self.parse_idxlist()
         endif else begin
-            node = IdxlistNode(self.lexer.start_pos)
+            self.error, 'Invalid subscript'
         endelse
         self.matchToken, self.TOKEN.T_RBRACKET
 
@@ -217,7 +221,7 @@ function ExprParser::parse_power
         tag = self.tag
         ; Note the tag is not matched here because the trailer products include
         ; brackets etc.
-        node = self.parse_trailer()
+        ;node = self.parse_trailer()
         if self.tag eq self.TOKEN.T_LPAREN then begin
             node = FuncCallNode(self.lexer.start_pos, node, self.parse_trailer())
         endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
