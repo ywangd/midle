@@ -35,17 +35,39 @@ function Eval_ut::test_dimension
     
     assert, array_equal(size(eval('[[1],[2]]'), /dim), [1,2]), 'Vertical vector'
     
-    assert, array_equal(size(eval('[[[1]]]'), /dim), [1]), 'No concatenation'
+    assert, array_equal(size(eval('[[[1]]]'), /dim), [1]), 'Redundant brakcets (concatenate to !NULL)'
+    assert, array_equal(size(eval('[ [[0,1],[2,3],[5,6]] ]'), /dim), [2,3]), 'Redundant brackets'
+    assert, array_equal(size(eval('[ [[[[1]]]], [2] ]'), /dim), [1,2]), 'Redundant brackets'
     
-    assert, array_equal(size(eval('[[[1]],[[2]]]'), /dim), [1,1,2]), 'Three level concatenation'
-    assert, array_equal(size(eval('[[[[1]]],[[[2]]]]'), /dim), [1,1,1,2]), 'Four level concatenation'
+    assert, array_equal(size(eval('[ [[1]], [[2]] ]'), /dim), [1,1,2]), 'Three level concatenation'
+    assert, array_equal(size(eval('[ [[[1]]], [[[2]]] ]'), /dim), [1,1,1,2]), 'Four level concatenation'
     
     assert, array_equal(size(eval('[[1,2,3], [3,4,5]]'), /dim), [3,2]), '3x2'
     
-    assert, array_equal($
+    assert, array_equal( $
         size(eval('[[[0,1],[2,3],[4,5]],[[6,7],[8,9],[10,11]],[[12,13],[14,15],[16,17]],[[18,19],[20,21],[22,23]]]'), /dim), $
         [2,3,4]), $
         '2x3x4'
+        
+    assert, array_equal( $
+        size(eval('[ [[0,1],[2,3],[5,6]], [8,9] ]'), /dim), $
+        [2,4]), $
+        'Seemingly wierd'
+    
+    assert, array_equal( $
+        size(eval('[ [8,9], [[0,1],[2,3],[5,6]] ]'), /dim), $
+        [2,4]), $
+        'Seemingly wierd'
+
+    assert, array_equal( $
+        size(eval('[ [[1,2]], [[3,4]] ]'), /dim), $
+        [2,1,2]), $
+        'Three level concatenation'
+        
+    assert, array_equal( $
+        size(eval('[ [[[1,2]]],[[[3,4]]] ]'), /dim), $
+        [2,1,1,2]), $
+        'Four level concatenation'
     
     return, 1
 end
@@ -81,6 +103,10 @@ function Eval_ut::test_values
         indgen(2,3,4)), $
         '3D array'
     
+    assert, array_equal( $
+        eval('[ [[0,1],[2,3],[5,6]], [8,9] ]'), $
+        [ [[0,1],[2,3],[5,6]], [8,9] ]), $
+        'Seemingly weird'
     
     assert, min(eval('(42, "Hello")') eq list(42, "Hello")) eq 1, 'List values'
     assert, n_elements(eval('{"x": 42.0, 42: "Hello", "Y": 42}') eq hash("x", 42.0, 42, "Hello", "Y", 42)) eq 3, $

@@ -100,6 +100,34 @@ function ExprParser::parse_idxlist
     return, node
 end
 
+function ExprParser::parse_array_literal
+    ; array_literal : '[' array_literal ']' | ternary_expr (',' '[' array_literal ']' | ternary_expr)*
+    node = ArrayLiteralNode(self.lexer.start_pos)
+    
+    if self.tag eq self.TOKEN.T_LBRACKET then begin
+        self.matchToken, self.tag
+        node.add, self.parse_array_literal()
+        self.matchToken, self.TOKEN.T_RBRACKET
+    endif else begin
+        node.add, self.parse_ternary_expr()
+    endelse
+    
+    while self.tag eq self.TOKEN.T_COMMA do begin
+        self.matchToken, self.tag
+        if self.tag ne self.TOKEN.T_RBRACKET then begin
+            if self.tag eq self.token.t_lbracket then begin
+                self.matchToken, self.tag
+                node.add, self.parse_array_literal()
+                self.matchToken, self.token.t_rbracket
+            endif else begin
+                node.add, self.parse_ternary_expr()
+            endelse
+        endif
+    endwhile
+    return, node
+end
+
+
 function ExprParser::parse_trailer
     ; trailer : (arglist) | [idxlist] | '.' IDENT
 
@@ -146,7 +174,7 @@ function ExprParser::parse_atom
     endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RBRACKET then begin
-            node = self.parse_expr_list(self.TOKEN.T_LBRACKET, self.TOKEN.T_RBRACKET, /ensureList)
+            node = self.parse_array_literal()
         endif else begin
             node = NullNode(self.lexer.start_pos, '[]')
         endelse
@@ -285,16 +313,10 @@ function ExprParser::parse_ternary_expr
     return, node
 end
 
-function ExprParser::parse_expr_list, ldelimiter, rdelimiter, ensureList=ensureList
+function ExprParser::parse_expr_list, ldelimiter, rdelimiter
     ; expr_list : ternary_expr (',' ternary_expr)* [',']
     
     node = self.parse_ternary_expr()
-    
-    ; Normally, the node is converted to a list only when mulitple expr exist or a
-    ; comma appears at the end. This is to ensure (1) is a number but (1,) is a list.
-    ; If ensureList is set, the node is enforced to be a list. This is required for 
-    ; hanlding IDL array literals so that [1] is an array.  
-    if keyword_set(ensureList) then node = ListNode(self.lexer.start_pos, ldelimiter, node)
     
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
