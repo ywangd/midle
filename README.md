@@ -1,4 +1,4 @@
-# A mini IDL expression interpreter in IDL
+# A Mini IDL Expression Evalutor (MIDLE) in IDL
 
 * Limited support for IDL expression evaluation
   + Variables, including limited support of system variables
@@ -25,7 +25,9 @@
   + Bracket indexing (array, hash)
     * This can be solved by the ND routines. However it is quite heavy weighted.
 
-* Added (incompatible) Features
+* Incompatible and Additional Features
+    * The exponential operator has right associativity in MIDLE but has left
+      associativity in IDL.
     * Chaining method calls without extra paranthesis, e.g. a().x(), a.b().x()
     * Chaining subscripts without extra paranthesis, e.g. a[5:*][2:9]
     * Higher level array concatenation. IDL only supports three levels. 

@@ -15,7 +15,7 @@ function UnaryOpNode::eval, env
 end
 
 function UnaryOpNode::print_helper
-    return, string(self.name(), strupcase(self.TOKEN.where(self.operator)), $
+    return, string(self.name(), strupcase((self.TOKEN.where(self.operator))[0]), $
         format='(A, " ''",A,"''")')
 end
 
@@ -28,5 +28,5 @@ end
 
 pro UnaryOpNode__define, class
     class = {UnaryOpNode, inherits AstNode, $
-        operator: ''}
+        operator: 0}
 end

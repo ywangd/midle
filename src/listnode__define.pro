@@ -27,7 +27,8 @@ function ListNode::eval, env
 end
 
 function ListNode::print_helper
-    return, string(self.name(), strupcase(self.TOKEN.where(self.operator)), format='(A, " ''",A,"''")')
+    return, string(self.name(), strupcase((self.TOKEN.where(self.operator))[0]), $
+        format='(A, " ''",A,"''")')
 end
 
 
@@ -40,5 +41,5 @@ end
 
 pro ListNode__define, class
     class = {ListNode, inherits AstNode, $
-        operator: '' }
+        operator: 0 }
 end

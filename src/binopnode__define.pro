@@ -34,8 +34,8 @@ end
 
 
 function BinOpNode::print_helper
-    return, string(self.name(), strupcase(self.TOKEN.where(self.operator)), $
-        format='(A, " ''",A,"''")')
+    return, string(self.name(), strupcase((self.TOKEN.where(self.operator))[0]), $
+        format='(A, " ''", A, "''")')
 end
 
 
@@ -49,5 +49,5 @@ end
 
 pro BinOpNode__define, class
     class = {BinOpNode, inherits AstNode, $
-        operator: ''}
+        operator: 0}
 end

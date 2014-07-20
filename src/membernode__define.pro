@@ -1,6 +1,6 @@
 
 function MemberNode::print_helper
-    return, string(self.name(), format='(A)')
+    return,self.name()
 end
 
 

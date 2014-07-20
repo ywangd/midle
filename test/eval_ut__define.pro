@@ -1,4 +1,9 @@
 
+function array_equal_exact, a1, a2
+    return, array_equal(a1, a2) and (array_equal(size(a1), size(a2))) 
+end
+
+
 function Eval_ut::test_datatypes
     assert, isa(eval('42B'), 'BYTE'), 'BYTE'
     assert, isa(eval('42'), 'INT'), 'INT'
@@ -69,6 +74,19 @@ function Eval_ut::test_dimension
         [2,1,1,2]), $
         'Four level concatenation'
     
+    return, 1
+end
+
+function Eval_ut::test_subscripts
+    env = Dictionary()
+    a = lindgen(5,4,3,2)
+    env.a = a
+    assert, array_equal_exact(eval('a[42]', env), a[42])
+    assert, array_equal_exact(eval('a[[22,42,24]]', env), a[[22,42,24]])
+    assert, array_equal_exact(eval('a[*]', env), a[*])
+    assert, array_equal_exact(eval('a[1:15]', env), a[1:15])
+    assert, array_equal_exact(eval('a[3:110:3]', env), a[3:110:3])
+
     return, 1
 end
 
