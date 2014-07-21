@@ -78,14 +78,21 @@ function Eval_ut::test_dimension
 end
 
 function Eval_ut::test_subscripts
-    env = Dictionary()
     a = lindgen(5,4,3,2)
-    env.a = a
+    env = Dictionary('a', a)
+    
     assert, array_equal_exact(eval('a[42]', env), a[42])
     assert, array_equal_exact(eval('a[[22,42,24]]', env), a[[22,42,24]])
     assert, array_equal_exact(eval('a[*]', env), a[*])
     assert, array_equal_exact(eval('a[1:15]', env), a[1:15])
     assert, array_equal_exact(eval('a[3:110:3]', env), a[3:110:3])
+    
+    assert, array_equal_exact(eval('a[[1,2],[1,2]]', env), a[[1,2],[1,2]])
+    assert, array_equal_exact(eval('a[[1,2],[1,2],0]', env), a[[1,2],[1,2],0])
+    assert, array_equal_exact(eval('a[[1,2],[1,2],*]', env), a[[1,2],[1,2],*])
+    assert, array_equal_exact(eval('a[[1,2],[1,2],0:2,*]', env), a[[1,2],[1,2],0:2,*])
+    
+    assert, array_equal_exact(eval('a[0:4:2,*,[0,2],*]', env), a[0:4:2,*,[0,2],*])
 
     return, 1
 end
