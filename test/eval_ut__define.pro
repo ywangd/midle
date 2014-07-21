@@ -80,7 +80,7 @@ end
 
 function Eval_ut::test_subscripts
     a = lindgen(5,4,3,2)
-    env = Dictionary('a', a)
+    env = Hash('a', a)
     
     assert, array_equal_exact(eval('a[42]', env), a[42])
     assert, array_equal_exact(eval('a[[22,42,24]]', env), a[[22,42,24]])
@@ -94,6 +94,24 @@ function Eval_ut::test_subscripts
     assert, array_equal_exact(eval('a[[1,2],[1,2],0:2,*]', env), a[[1,2],[1,2],0:2,*])
     
     assert, array_equal_exact(eval('a[0:4:2,*,[0,2],*]', env), a[0:4:2,*,[0,2],*])
+    
+    a = hash("x", hash("q", indgen(3,4), "r", list(5, indgen(3,4,5,start=90),7)), "y", 2, "z", list(3, 4, indgen(3,4,5),8,[list('h','e'),list('w','d')])) 
+    env = Hash('a', a)
+    assert, eval('a["x","r",1,2,3]', env) eq a["x","r",1,2,3]
+    
+    assert, array_equal_exact(eval('a["x","r",1,*]', env), a["x","r",1,*])
+    
+    assert, array_equal_exact(eval('a["x","r",1,1:2,1:3]', env), a["x","r",1,1:2,1:3])
+    
+    assert, array_equal_exact(eval('a["x","r",1,5:25]', env), a["x","r",1,5:25])
+    
+    assert, array_equal_exact(eval('a["x","r",1,1:2,1:3,0:3:2]', env), a["x","r",1,1:2,1:3,0:3:2])
+    
+    assert, array_equal_exact(eval('a["x","r",1,[1,2],[2,3]]', env), a["x","r",1,[1,2],[2,3]])
+    
+    assert, array_equal_exact(eval('a["x","r",1,[1,2],[2,3],*]', env), a["x","r",1,[1,2],[2,3],*])
+    
+    assert, min(eval('a["z",4,0]', env) eq a["z",4,0]) eq 1
 
     return, 1
 end

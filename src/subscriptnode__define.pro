@@ -2,6 +2,25 @@
 function SubscriptNode::eval, env
     
     collection = (self.operands[0]).eval(env)
+    nsubs = (self.operands[1]).operands.count()
+    
+    ; For Hash or list, only the first subscript is applied to the collection itself.
+    ; The rest of the subscripts, if any, are applied to the child elements.
+    currentIndex = 0
+    while (isa(collection, 'List') || isa(collection, 'Hash')) && currentIndex lt nsubs do begin
+        idxlist = (self.operands[1]).eval(env, [n_elements(collection)], fromIndex=currentIndex, toIndex=currentIndex)
+        collection = collection[idxlist[0]]
+        currentIndex += 1
+    endwhile
+    
+    ; End the program flow if we have exhausted the number of subscripts
+    if currentIndex eq nsubs  then return, collection
+    
+    ; If program reaches here, collections should now be a regular array 
+    ; Use what is left of the subscripts and treat the first subscript as the first dimension.
+    ; Note that hash or list can nest subscript arrays but not vice versa.
+    ; That is IDL does not support indexing directly into a list that is a member of an array.
+    ; E.g. this is illegal a = [list(1,2,3)] & print, a[0,1]
     shp = size(collection, /dimension)
     nd = n_elements(shp)
     ; Scalar is the same as array of dimension [1]
@@ -10,7 +29,8 @@ function SubscriptNode::eval, env
     ; This is for the convenience of subsequent subscripts calculations
     if n_elements(shp) lt 8 then shp = [shp, replicate(1, 8-n_elements(shp))]
     
-    idxlist = (self.operands[1]).eval(env, shp, isRanges=isRanges)
+    ; Evalulate what is left of the subscripts
+    idxlist = (self.operands[1]).eval(env, shp, fromIndex=currentIndex, isRanges=isRanges)
     
     if max(isRanges) gt 0 then begin
         if idxlist.count() lt nd then idxlist.add, replicate(0, nd-idxlist.count()), /extract
