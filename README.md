@@ -21,7 +21,7 @@
     * Mimimum and Maximum: <, >
     * Others: ?:, [::], (), ., ->
   + Function calls
-    * Up to three positional arguments and unlimited input keyword arguments
+    * Up to nine positional arguments and unlimited input keyword arguments
   + Bracket indexing (array, hash)
     * This can be solved by the ND routines. However it is quite heavy weighted.
 
@@ -41,4 +41,6 @@
           list(42)
 
 * Unsupported IDL features
+    * Output positional and keyword arguments
     * Compound operators, such as +=, ++ etc.
+    * Parenthesis over assignment statement, i.e. a = (b = 42)

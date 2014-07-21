@@ -10,6 +10,7 @@ function ExprParser::parse_argument
         if self.tag eq self.TOKEN.T_IDENT then begin
             node = KeyargNode(self.lexer.start_pos, $
                 IdentNode(self.lexer.start_pos, self.lexeme), NumberNode(self.lexer.start_pos, '1', 2))
+            self.matchToken, self.TOKEN.T_IDENT
         endif else begin
             self.error, 'identifier expected for keyword argument'
         endelse
@@ -160,6 +161,7 @@ function ExprParser::parse_trailer
             self.error, 'identifier expected'
         endif else begin
             node = IdentNode(self.lexer.start_pos, self.lexeme)
+            self.matchToken, self.TOKEN.T_IDENT
         endelse
     endelse
     return, node

@@ -1,11 +1,18 @@
 
-function ArglistNode::getKeyargs, posargs=posargs
-    keyargs = []
-    posargs = []
+function ArglistNode::eval, env, keyargs=keyargs
+    
+    posargs = list()
+    keyargs = {}
+    
     foreach arg, self.operands do begin
-        if isa(arg, 'KeyargNode') then keyargs = [keyargs, arg] else posargs = [posargs, arg] 
+        if isa(arg, 'KeyargNode') then begin
+            keyargs = create_struct(keyargs, arg.eval(env))
+        endif else begin
+            posargs.add, arg.eval(env)
+        endelse
     endforeach
-    return, keyargs
+    
+    return, posargs
 end
 
 

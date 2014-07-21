@@ -1,7 +1,7 @@
 
 
-function IdentNode::eval, env
-    return, env[self.lexeme]
+function IdentNode::eval, env, lexeme=lexeme
+    if keyword_set(lexeme) then return, self.lexeme else return, env[self.lexeme]
 end
 
 function IdentNode::print_helper
