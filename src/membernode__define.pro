@@ -1,21 +1,37 @@
 
 function MemberNode::eval, env, member=member, lexeme=lexeme
     objref = (self.operands[0]).eval(env)
-    
+
+    if ~isa(objref, 'Objref') && ~isa(objref, 'Struct') then self.error, 'Incorrect data type for member access'
+
     member = self.operands[1]
     if isa(member, 'IdentNode') then begin
         member = member.eval(env, /lexeme)
     endif else begin
         self.error, 'Invalid object property'
     endelse
-    
+
     if keyword_set(lexeme) then begin
         return, objref
+        
     endif else begin
-        ; does not seem to be possible to get the property with a string as its name?
-        self.error, 'Object property access is not supported'
+        
+        if isa(objref, 'Hash') then begin
+            return, objref[member]
+        endif else if isa(objref, 'Struct') then begin
+            idx = where(tag_names(objref) eq strupcase(member), count)
+            if count gt 0 then begin
+                return, objref.(idx[0])
+            endif else begin
+                self.error, 'Field does not exist: ' + member
+            endelse
+        endif else begin
+            ; Impossible to get a property by a string as its name?
+            self.error, 'Property access is not supported for class type ' + typename(objref)
+        endelse
+
     endelse
-    
+
 end
 
 
