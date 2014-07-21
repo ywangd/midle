@@ -4,21 +4,29 @@ function ListNode::eval, env
 
     TOKEN = self.TOKEN
 
-    if self.operator eq TOKEN.T_LCURLY then begin
+    if self.operator eq TOKEN.T_HASH_LCURLY then begin
         
         ret = hash()
         for i = 0, self.operands.count()-1, 2 do begin
             key = (self.operands[i]).eval(env)
-            val = (self.operands[i+1]).eval(env)
             if isa(key, /number, /scalar) || isa(key, 'String', /scalar) then begin
-                ret[key] = val
+                ret[key] = (self.operands[i+1]).eval(env)
             endif else begin
                 self.error, 'Invalid Hash key ' + strtrim(key,2)
             endelse
         endfor
 
-    endif else begin  ; 'T_LPAREN
+    endif else if self.operator eq TOKEN.T_LCURLY then begin
         
+        ret = {}
+        for i = 0, self.operands.count()-1, 2 do begin
+            key = self.operands[i]
+            if ~isa(key, 'IdentNode') then self.error, 'Invalid structure field name'
+            keyName = key.eval(env, /lexeme)
+            ret = create_struct(ret, keyName, (self.operands[i+1]).eval(env))
+        endfor
+        
+    endif else begin  ; 'T_LPAREN
         ret = list()
         foreach operand, self.operands do ret.add, operand.eval(env)
     endelse

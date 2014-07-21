@@ -38,10 +38,10 @@ function ExprParser::parse_arglist
     return, node
 end
 
-function ExprParser::parse_deflist
+function ExprParser::parse_deflist, operator
     ; deflist : ternary_expr : ternary_expr (',' ternary_expr : ternary_expr) [',']
     ; The key of Hash literal must be String or Number, this is checked during eval
-    node = ListNode(self.lexer.start_pos, self.TOKEN.T_LCURLY)
+    node = ListNode(self.lexer.start_pos, operator)
     node.add, self.parse_ternary_expr()
     self.matchToken, self.TOKEN.T_COLON
     node.add, self.parse_ternary_expr()
@@ -177,6 +177,7 @@ function ExprParser::parse_atom
             node = ListNode(self.lexer.start_pos, self.TOKEN.T_LPAREN)
         endelse
         self.matchToken, self.TOKEN.T_RPAREN
+        
     endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RBRACKET then begin
@@ -185,29 +186,45 @@ function ExprParser::parse_atom
             node = NullNode(self.lexer.start_pos, '[]')
         endelse
         self.matchToken, self.TOKEN.T_RBRACKET
+        
     endif else if self.tag eq self.TOKEN.T_LCURLY then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RCURLY then begin
-            node = self.parse_deflist()
+            node = self.parse_deflist(self.TOKEN.T_LCURLY)
         endif else begin
             node = ListNode(self.lexer.start_pos, self.TOKEN.T_LCURLY)
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
+        
+    endif else if self.tag eq self.TOKEN.T_HASH_LCURLY then begin  ; hash literal
+        self.matchToken, self.tag
+        if self.tag ne self.TOKEN.T_RCURLY then begin
+            node = self.parse_deflist(self.TOKEN.T_HASH_LCURLY)
+        endif else begin
+            node = ListNode(self.lexer.start_pos, self.TOKEN.T_HASH_LCURLY)
+        endelse
+        self.matchToken, self.TOKEN.T_RCURLY
+        
     endif else if self.tag eq self.TOKEN.T_IDENT then begin
         node = IdentNode(self.lexer.start_pos, self.lexeme)
         self.getToken
+        
     endif else if (typeCode = self.numberCode(self.tag)) ne -1 then begin
         node = NumberNode(self.lexer.start_pos, self.lexeme, typeCode)
         self.getToken
+        
     endif else if self.tag eq self.TOKEN.T_STRING then begin
         node = StringNode(self.lexer.start_pos, self.lexeme)
         self.getToken
+        
     endif else if self.tag eq self.TOKEN.T_NULL then begin
         node = NullNode(self.lexer.start_pos, self.lexeme)
         self.getToken
+        
     endif else if self.tag eq self.TOKEN.T_SYSV then begin
         node = SysvarNode(self.lexer.start_pos, self.lexeme)
         self.getToken
+        
     endif else begin
         self.error, 'Unrecognized token ' + self.lexeme
     endelse

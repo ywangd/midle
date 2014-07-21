@@ -3,7 +3,6 @@ function array_equal_exact, a1, a2
     return, array_equal(a1, a2) and (array_equal(size(a1), size(a2))) 
 end
 
-
 function Eval_ut::test_datatypes
     assert, isa(eval('42B'), 'BYTE'), 'BYTE'
     assert, isa(eval('42'), 'INT'), 'INT'
@@ -25,8 +24,10 @@ function Eval_ut::test_datatypes
     assert, isa(eval('"Hello"'), 'STRING'), 'STRING'
     assert, isa(eval('!NULL'), 'UNDEFINED'), 'UNDEFINED'
     assert, isa(eval('[]'), 'UNDEFINED'), 'UNDEFINED'
+    assert, isa(eval('{}'), 'UNDEFINED'), 'UNDEFINED'
+    assert, isa(eval('{x:42}'), 'STRUCT'), 'STRUCT'
     assert, isa(eval('()'), 'LIST'), 'LIST'
-    assert, isa(eval('{}'), 'HASH'), 'HASH'
+    assert, isa(eval('h{}'), 'HASH'), 'HASH'
 
     return, 1
 end
@@ -123,18 +124,21 @@ function Eval_ut::test_values
     assert, array_equal(eval('[42, 42.42]'), [42, 42.42]), 'Mixed float vector'
     assert, array_equal(eval('["Hello", "World"]'), ["Hello", "World"]), 'String array'
     
-    assert, array_equal($
+    assert, array_equal_exact($
         eval('[[[0,1],[2,3],[4,5]],[[6,7],[8,9],[10,11]],[[12,13],[14,15],[16,17]],[[18,19],[20,21],[22,23]]]'), $
         indgen(2,3,4)), $
         '3D array'
     
-    assert, array_equal( $
+    assert, array_equal_exact( $
         eval('[ [[0,1],[2,3],[5,6]], [8,9] ]'), $
         [ [[0,1],[2,3],[5,6]], [8,9] ]), $
         'Seemingly weird'
+     
+    st = eval('{x: 42.0, y: "Hello", z: 42}')   
+    assert, isa(st, 'Struct') && st.x eq 42.0 && st.y eq 'Hello' && st.z eq 42
     
     assert, min(eval('(42, "Hello")') eq list(42, "Hello")) eq 1, 'List values'
-    assert, n_elements(eval('{"x": 42.0, 42: "Hello", "Y": 42}') eq hash("x", 42.0, 42, "Hello", "Y", 42)) eq 3, $
+    assert, n_elements(eval('h{"x": 42.0, 42: "Hello", "Y": 42}') eq hash("x", 42.0, 42, "Hello", "Y", 42)) eq 3, $
         'Hash values'
 
     return, 1
@@ -161,12 +165,12 @@ function Eval_ut::test_arith
     assert, eval('-2.2 - 2 mod ((42. + 22) ^ 2 > 3 - 4.2) * 2.2 / 2.4') eq (-2.2 - 2 mod ((42. + 22) ^ 2 > 3 - 4.2) * 2.2 / 2.4), $
         'Arith operator precedence with parentheis'
 
-    assert, array_equal($
+    assert, array_equal_exact($
         eval('[2.2, 4.2, 42] + [4.2, 22, .42] * [0.22, 22.22, 4.222]'), $
         [2.2, 4.2, 42] + [4.2, 22, .42] * [0.22, 22.22, 4.222]), $
         'Arith operators on vectors'
 
-    assert, array_equal($
+    assert, array_equal_exact($
         eval('([2.2, 4.2, 42] + [4.2, 22, .42]) * [0.22, 22.22, 4.222]'), $
         ([2.2, 4.2, 42] + [4.2, 22, .42]) * [0.22, 22.22, 4.222]), $
         'Arith operators on vectors with parenthesis'
@@ -174,6 +178,25 @@ function Eval_ut::test_arith
     return, 1
 end
 
+function Eval_ut::test_funccall
+    assert, array_equal_exact(eval('indgen(3,4,5)'), indgen(3,4,5))
+    assert, array_equal_exact(eval('sindgen(3,4,5, start=10)'), sindgen(3,4,5, start=10))
+    assert, array_equal_exact(eval('dist(10,10)'), dist(10,10)) 
+    assert, eval('a.count()', {a: list(1,2,3,4,5)}) eq 5
+    assert, eval('a.where(5)[0]', {a: list(1,2,3,4,5)}) eq 4 
+    
+    return, 1
+end
+
+function Eval_ut::test_member
+    assert, eval('a.x', {a: Hash("x", 42, "y", 22)}) eq 42
+    assert, eval('h{"x": 42, "y": 22}.x') eq 42
+    assert, eval('Dictionary("x", 42, "y", 22).x') eq 42
+    assert, eval('a.x', {a: {x: 42, y: 22}}) eq 42
+    assert, eval('{x: 42, y: 22}.x') eq 42
+    
+    return, 1
+end
 
 
 pro Eval_ut__define, class

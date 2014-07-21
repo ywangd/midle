@@ -1,4 +1,4 @@
-# A Mini IDL Expression Evalutor (MIDLE) in IDL
+# A Mini IDL Expression Evaluator (MIDLE) in IDL
 
 * Limited support for IDL expression evaluation
   + Variables, including limited support of system variables
@@ -8,7 +8,8 @@
     * !NULL
     * FLOAT, DOUBLE (scientific notation included)
     * STRING (single and double quoted)
-    * STRUCT is not supported as object types are preferred.
+    * Structure
+        - Only anonymous struct (no name, no inherits)
     * List, Hash types are considered as Function calls. 
         - List and Hash are also supported by using extended literal syntax
           (see details in Added Features) 
@@ -20,10 +21,10 @@
     * Relational: EQ, NE, GE, GT, LE, LT
     * Mimimum and Maximum: <, >
     * Others: ?:, [::], (), ., ->
+  + Bracket indexing (array, hash)
   + Function calls
     * Up to nine positional arguments and unlimited input keyword arguments
-  + Bracket indexing (array, hash)
-    * This can be solved by the ND routines. However it is quite heavy weighted.
+  + Object property access (dot notation) only works for Hash-like objects or structure.
 
 * Incompatible and Additional Features
     * The exponential operator has right associativity in MIDLE but has left
@@ -44,3 +45,4 @@
     * Output positional and keyword arguments
     * Compound operators, such as +=, ++ etc.
     * Parenthesis over assignment statement, i.e. a = (b = 42)
+

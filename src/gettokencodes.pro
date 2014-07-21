@@ -49,6 +49,7 @@ function getTokenCodes
     TOKEN.T_RBRACKET = 344
     TOKEN.T_LCURLY = 345
     TOKEN.T_RCURLY = 346
+    TOKEN.T_HASH_LCURLY = 347
     TOKEN.T_IDENT = 401
     TOKEN.T_SYSV = 411
     

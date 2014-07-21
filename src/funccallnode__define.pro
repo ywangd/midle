@@ -7,6 +7,25 @@ function FuncCallNode::eval, env
     
     if isa(func, 'IdentNode') then begin
         funcname = func.eval(env, /lexeme)
+        catch, theError
+        if theError ne 0 then begin
+            catch, /cancel
+            if !error_state.name eq 'IDL_M_UPRO_UNDEF' then begin
+                case p.count() of
+                    0: return, nk ? call_function('obj_new', funcname, _extra=k) : call_function('obj_new', funcname)
+                    1: return, nk ? call_function('obj_new', funcname, p[0], _extra=k) : call_function('obj_new', funcname, p[0])
+                    2: return, nk ? call_function('obj_new', funcname, p[0], p[1],  _extra=k) : call_function('obj_new', funcname, p[0], p[1])
+                    3: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2])
+                    4: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3])
+                    5: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4])
+                    6: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5])
+                    7: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6])
+                    8: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7])
+                    9: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8])
+                    else: self.error, 'Too many positional arguments'
+                endcase
+            endif else message, /reissue_last
+        endif
         case p.count() of
             0: return, nk ? call_function(funcname, _extra=k) : call_function(funcname) 
             1: return, nk ? call_function(funcname, p[0], _extra=k) : call_function(funcname, p[0])

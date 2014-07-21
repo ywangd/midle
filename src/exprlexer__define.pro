@@ -303,18 +303,24 @@ function ExprLexer::getToken
             endwhile
         end
 
-        ; identifier
+        ; identifier, keywords and pecial synatical sugars
         isAlpha(self.char) || self.char eq '_': begin
             while 1 do begin
                 self.nextc
                 if ~(isAlnum(self.char) || self.char eq '_') then begin
-                    token = self.keywordLookup()
-                    if token ne -1 then begin
-                        return, token
+                    ; Special Hash literal
+                    if strupcase(self.getLexeme()) eq 'H' && self.char eq '{' then begin
+                        self.nextc
+                        return, self.TOKEN.T_HASH_LCURLY
                     endif else begin
-                        return, self.TOKEN.T_IDENT
+                        token = self.keywordLookup()
+                        if token ne -1 then begin
+                            return, token  ; keyword
+                        endif else begin
+                            return, self.TOKEN.T_IDENT
+                        endelse
                     endelse
-                endif
+                endif 
             endwhile
         end
 
@@ -338,6 +344,19 @@ function ExprLexer::getToken
 
 
     endcase
+end
+
+function ExprLexer::lex, line
+    self.feed, line
+    ret = list()
+    repeat begin
+        token = self.getToken()
+        t = strupcase((self.TOKEN.where(token))[0])
+        s = self.getLexeme()
+        ret.add, [t, s]
+    endrep until token eq self.TOKEN.T_EOL
+    
+    return, ret
 end
 
 
