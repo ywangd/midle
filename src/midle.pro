@@ -1,5 +1,5 @@
 
-function eval, line, _env, ast=ast
+function midle, line, _env, ast=ast
 
     ast = parse(line)
     

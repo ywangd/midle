@@ -21,7 +21,7 @@ function isAlnum, c
 end
 
 
-pro ExprLexer::nextc
+pro MidleLexer::nextc
     ; lookahead_pos is always 1 ahead of the char
     ; always return char as uppercase
     self.char = strupcase(strmid(self.buffer, self.lookahead_pos, 1))
@@ -29,17 +29,17 @@ pro ExprLexer::nextc
 end
 
 
-pro ExprLexer::matchc, c
+pro MidleLexer::matchc, c
     self.nextc
     if self.char ne c then self.error, 'syntax error - ' + c + ' expected'
 end
 
 
-function ExprLexer::getLexeme
+function MidleLexer::getLexeme
     return, strmid(self.buffer, self.start_pos, self.lookahead_pos - 1 - self.start_pos)
 end
 
-function ExprLexer::keywordLookup
+function MidleLexer::keywordLookup
     lexeme = strupcase(self.getLexeme())
     if self.keywords.haskey(lexeme) then begin
         return, self.keywords[lexeme]
@@ -48,14 +48,14 @@ function ExprLexer::keywordLookup
     endelse
 end
 
-pro ExprLexer::error, msg
+pro MidleLexer::error, msg
     on_error, 1
     message, string(self.lookahead_pos-1, self.char, msg, $
         format='("ERROR: column ", I0, " [", A1, "] ", A)')
 end
 
 
-function ExprLexer::processScientificNotation, notation
+function MidleLexer::processScientificNotation, notation
 
     if self.char eq '+' || self.char eq '-' then begin
         self.nextc
@@ -72,7 +72,7 @@ function ExprLexer::processScientificNotation, notation
 end
 
 
-function ExprLexer::processFraction
+function MidleLexer::processFraction
     while isDigit(self.char) do begin
         self.nextc
     endwhile
@@ -90,7 +90,7 @@ end
 
 ; When getToken returns, self.char points to the first character in the buffer
 ; that is not processed. lookahead_pos is one position further to the right.
-function ExprLexer::getToken
+function MidleLexer::getToken
 
     while isWhite(self.char) do self.nextc
 
@@ -346,7 +346,7 @@ function ExprLexer::getToken
     endcase
 end
 
-function ExprLexer::lex, line
+function MidleLexer::lex, line
     self.feed, line
     ret = list()
     repeat begin
@@ -360,25 +360,25 @@ function ExprLexer::lex, line
 end
 
 
-pro ExprLexer::feed, line
+pro MidleLexer::feed, line
     self.buffer = line
     self.lookahead_pos = 0L
     self.nextc
 end
 
 
-pro ExprLexer::getProperty, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos
+pro MidleLexer::getProperty, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos
     lookahead_pos = self.lookahead_pos
     char = self.char
     start_pos = self.start_pos
 end
 
 
-pro ExprLexer::cleanup
+pro MidleLexer::cleanup
 end
 
 
-function ExprLexer::init, line
+function MidleLexer::init, line
 
     if n_elements(line) ne 0 then begin
         self.buffer = line
@@ -404,9 +404,9 @@ function ExprLexer::init, line
 end
 
 
-pro ExprLexer__define, class
+pro MidleLexer__define, class
 
-    class = {ExprLexer, inherits IDL_Object, $
+    class = {MidleLexer, inherits IDL_Object, $
         buffer: '', $
         lookahead_pos: 0L, $
         char: '', $

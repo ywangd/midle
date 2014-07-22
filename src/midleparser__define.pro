@@ -1,5 +1,5 @@
 
-function ExprParser::parse_argument
+function MidleParser::parse_argument
     ; argument : ternary_expr ['=' ternary_expr] | '/' IDENT
     ; Note the keyword argument really should be ident '=' ternary_expr
     ; It is set this way to avoid ambiguity. The expr before '=' will
@@ -27,7 +27,7 @@ function ExprParser::parse_argument
     
 end
 
-function ExprParser::parse_arglist
+function MidleParser::parse_arglist
     ; arglist : argument (',' argument)*
     node = ArglistNode(self.lexer.start_pos)
     node.add, self.parse_argument()
@@ -38,7 +38,7 @@ function ExprParser::parse_arglist
     return, node
 end
 
-function ExprParser::parse_deflist, operator
+function MidleParser::parse_deflist, operator
     ; deflist : ternary_expr : ternary_expr (',' ternary_expr : ternary_expr) [',']
     ; The key of Hash literal must be String or Number, this is checked during eval
     node = ListNode(self.lexer.start_pos, operator)
@@ -57,7 +57,7 @@ function ExprParser::parse_deflist, operator
     return, node
 end
 
-function ExprParser::parse_sliceop, node
+function MidleParser::parse_sliceop, node
     ; sliceop : ':' (ternary_expr | '*') [':' (ternary_expr | '*')]
     self.matchToken, self.TOKEN.T_COLON
     if self.tag eq self.TOKEN.T_MUL then begin
@@ -78,7 +78,7 @@ function ExprParser::parse_sliceop, node
     return, node
 end
 
-function ExprParser::parse_idx
+function MidleParser::parse_idx
     ; idx : (ternary_expr | '*') [sliceop]
     ; The indices must be integers. Ths is ensured during eval.
     node = IndexNode(self.lexer.start_pos)
@@ -94,7 +94,7 @@ function ExprParser::parse_idx
     return, node
 end
 
-function ExprParser::parse_idxlist
+function MidleParser::parse_idxlist
     ; idxlist : idx (, idx)*
     node = IdxlistNode(self.lexer.start_pos)
     node.add, self.parse_idx()
@@ -105,7 +105,7 @@ function ExprParser::parse_idxlist
     return, node
 end
 
-function ExprParser::parse_array_literal
+function MidleParser::parse_array_literal
     ; array_literal : '[' array_literal ']' | ternary_expr (',' '[' array_literal ']' | ternary_expr)*
     node = ArrayLiteralNode(self.lexer.start_pos)
     
@@ -133,7 +133,7 @@ function ExprParser::parse_array_literal
 end
 
 
-function ExprParser::parse_trailer
+function MidleParser::parse_trailer
     ; trailer : (arglist) | [idxlist] | '.' IDENT
 
     if self.tag eq self.TOKEN.T_LPAREN then begin
@@ -167,7 +167,7 @@ function ExprParser::parse_trailer
     return, node
 end
 
-function ExprParser::parse_atom
+function MidleParser::parse_atom
     ; atom : (...) | [...] | {...} | IDENT | NUMBER | STRING | !NULL | SYSVAR
     if self.tag eq self.TOKEN.T_LPAREN then begin
         self.matchToken, self.tag
@@ -232,7 +232,7 @@ function ExprParser::parse_atom
     return, node
 end
 
-function ExprParser::parse_power
+function MidleParser::parse_power
     ; power : atom trailer* ['^' factor]
     node = self.parse_atom()
 
@@ -259,7 +259,7 @@ function ExprParser::parse_power
     return, node
 end
 
-function ExprParser::parse_factor
+function MidleParser::parse_factor
     ; factor : ('+' | '-' | 'NOT' | '~') factor | power
     if self.isUnaryOperator(self.tag) then begin
         self.matchToken, (tag = self.tag)
@@ -270,7 +270,7 @@ function ExprParser::parse_factor
     return, node
 end
 
-function ExprParser::parse_term_expr
+function MidleParser::parse_term_expr
     ; * / MOD # ##
     node = self.parse_factor()
     while self.isTermOperator(self.tag) do begin
@@ -280,7 +280,7 @@ function ExprParser::parse_term_expr
     return, node
 end
 
-function ExprParser::parse_arith_expr
+function MidleParser::parse_arith_expr
     ; + - < >
     node = self.parse_term_expr()
     while self.isArithOperator(self.tag) do begin
@@ -290,7 +290,7 @@ function ExprParser::parse_arith_expr
     return, node
 end
 
-function ExprParser::parse_relational_expr
+function MidleParser::parse_relational_expr
     ; relational_expr : arith_expr (relation_op arith_expr)*
     node = self.parse_arith_expr()
     while self.isRelationOperator(self.tag) do begin
@@ -300,7 +300,7 @@ function ExprParser::parse_relational_expr
     return, node
 end
 
-function ExprParser::parse_bitwise_expr
+function MidleParser::parse_bitwise_expr
     ; bitwise_expr : relational_expr (bitwise_op relational_expr)*
     ; bitwise_op : 'AND' | 'OR' | 'XOR'
     node = self.parse_relational_expr()
@@ -311,7 +311,7 @@ function ExprParser::parse_bitwise_expr
     return, node
 end
 
-function ExprParser::parse_logical_expr
+function MidleParser::parse_logical_expr
     ; logical_expr : bitwise_expr (logical_op bitwise_expr)*
     ; logical_op : '&&' | '||'
     node = self.parse_bitwise_expr()
@@ -323,7 +323,7 @@ function ExprParser::parse_logical_expr
 end
 
 
-function ExprParser::parse_ternary_expr
+function MidleParser::parse_ternary_expr
     ; ternary_expr : logical_expr ['?' logical_expr ':' logical_expr]
     node = self.parse_logical_expr()
     if self.tag eq self.TOKEN.T_QMARK then begin
@@ -336,7 +336,7 @@ function ExprParser::parse_ternary_expr
     return, node
 end
 
-function ExprParser::parse_expr_list, ldelimiter, rdelimiter
+function MidleParser::parse_expr_list, ldelimiter, rdelimiter
     ; expr_list : ternary_expr (',' ternary_expr)* [',']
     
     node = self.parse_ternary_expr()
@@ -357,7 +357,7 @@ end
 
 ; At the end of each parse function, self.tag always points to the next
 ; un-processed token.
-function ExprParser::parse, line
+function MidleParser::parse, line
     self.lexer.feed, line
     self.getToken
     if self.tag eq self.TOKEN.T_EOL then message, 'no code found'
@@ -369,11 +369,11 @@ function ExprParser::parse, line
 end
 
 
-pro ExprParser::error, msg
+pro MidleParser::error, msg
     message, 'ParserError: ' + msg
 end
 
-function ExprParser::numberCode, tag
+function MidleParser::numberCode, tag
     case tag of
         self.TOKEN.T_BYTE: typeCode = 1
         self.TOKEN.T_INT: typeCode = 2
@@ -389,36 +389,36 @@ function ExprParser::numberCode, tag
     return, typeCode
 end
 
-function ExprParser::isTrailerOperator, operator
+function MidleParser::isTrailerOperator, operator
     if operator eq self.TOKEN.T_LPAREN || operator eq self.TOKEN.T_LBRACKET || operator eq self.TOKEN.T_DOT then return, 1 else return, 0
 end
 
-function ExprParser::isUnaryOperator, operator
+function MidleParser::isUnaryOperator, operator
     if where([self.TOKEN.T_ADD, self.TOKEN.T_SUB, self.TOKEN.T_BNOT, self.TOKEN.T_LNOT] eq operator, /null) ne !NULL then return, 1 else return, 0
 end
 
-function ExprParser::isTermOperator, operator
+function MidleParser::isTermOperator, operator
     if where([self.TOKEN.T_MUL, self.TOKEN.T_DIV, self.TOKEN.T_MOD, self.TOKEN.T_HASH, self.TOKEN.T_DHASH] eq operator, /null) ne !NULL then return, 1 else return, 0
 end
 
-function ExprParser::isArithOperator, operator
+function MidleParser::isArithOperator, operator
     if where([self.TOKEN.T_ADD, self.TOKEN.T_SUB, self.TOKEN.T_MIN, self.TOKEN.T_MAX] eq operator, /null) ne !NULL then return, 1 else return, 0
 end
 
-function ExprParser::isRelationOperator, operator
+function MidleParser::isRelationOperator, operator
     if where([self.TOKEN.T_EQ, self.TOKEN.T_NE, self.TOKEN.T_GE, self.TOKEN.T_GT, self.TOKEN.T_LE, self.TOKEN.T_LT] eq operator, /null) ne !NULL then return, 1 else return, 0
 
 end
 
-function ExprParser::isBitWiseOperator, operator
+function MidleParser::isBitWiseOperator, operator
     if operator eq self.TOKEN.T_BAND || operator eq self.TOKEN.T_BOR || operator eq self.TOKEN.T_BXOR then return, 1 else return, 0
 end
 
-function ExprParser::isLogicalOperator, operator
+function MidleParser::isLogicalOperator, operator
     if operator eq self.TOKEN.T_LAND || operator eq self.TOKEN.T_LOR then return, 1 else return, 0
 end
 
-pro ExprParser::matchToken, tag
+pro MidleParser::matchToken, tag
     if self.tag ne tag then begin
         self.error, self.lexeme
     endif
@@ -426,24 +426,24 @@ pro ExprParser::matchToken, tag
 end
 
 
-pro ExprParser::getToken
+pro MidleParser::getToken
     self.tag = self.lexer.getToken()
     self.lexeme = self.lexer.getLexeme()
 end
 
-pro ExprParser::cleanup
+pro MidleParser::cleanup
 end
 
 
-function ExprParser::init
+function MidleParser::init
     self.TOKEN = getTokenCodes()
-    self.lexer = ExprLexer()
+    self.lexer = MidleLexer()
     return, 1
 end
 
 
-pro ExprParser__define, class
-    class = {ExprParser, inherits IDL_Object, $
+pro MidleParser__define, class
+    class = {MidleParser, inherits IDL_Object, $
         TOKEN: obj_new(), $
         lexer: obj_new(), $
         tag: 0, $

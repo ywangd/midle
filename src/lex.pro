@@ -1,6 +1,6 @@
 
 function lex, line
-    lexer = ExprLexer()
+    lexer = MidleLexer()
     stream = lexer.lex(line)
     
     return, stream

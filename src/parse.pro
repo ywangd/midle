@@ -2,7 +2,7 @@
 
 function parse, line
     
-    p = ExprParser()
+    p = MidleParser()
     ast = p.parse(line)
     return, ast
 end
