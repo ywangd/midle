@@ -1,6 +1,8 @@
 
 
 function FuncCallNode::eval, env
+    compile_opt logical_predicate
+
     func = self.operands[0]
     p = (self.operands[1]).eval(env, k=k)
     nk = n_elements(k)

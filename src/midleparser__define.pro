@@ -167,6 +167,26 @@ function MidleParser::parse_trailer
     return, node
 end
 
+
+function MidleParser::parse_expr_list, ldelimiter, rdelimiter
+    ; expr_list : ternary_expr (',' ternary_expr)* [',']
+
+    node = self.parse_ternary_expr()
+
+    while self.tag eq self.TOKEN.T_COMMA do begin
+        self.matchToken, self.tag
+        if ~isa(node, 'ListNode') then begin
+            node = ListNode(self.lexer.start_pos, ldelimiter, node)
+        endif
+        ; An optional comma is allowed at the end. This is important as it is required
+        ; to defferiate whether the code is a number (1) or a list (1,)
+        if self.tag ne rdelimiter then node.add, self.parse_ternary_expr() else break
+    endwhile
+
+    return, node
+end
+
+
 function MidleParser::parse_atom
     ; atom : (...) | [...] | {...} | IDENT | NUMBER | STRING | !NULL | SYSVAR
     if self.tag eq self.TOKEN.T_LPAREN then begin
@@ -336,35 +356,31 @@ function MidleParser::parse_ternary_expr
     return, node
 end
 
-function MidleParser::parse_expr_list, ldelimiter, rdelimiter
-    ; expr_list : ternary_expr (',' ternary_expr)* [',']
-    
-    node = self.parse_ternary_expr()
-    
-    while self.tag eq self.TOKEN.T_COMMA do begin
-        self.matchToken, self.tag
-        if ~isa(node, 'ListNode') then begin
-            node = ListNode(self.lexer.start_pos, ldelimiter, node)
-        endif
-        ; An optional comma is allowed at the end. This is important as it is required
-        ; to defferiate whether the code is a number (1) or a list (1,)
-        if self.tag ne rdelimiter then node.add, self.parse_ternary_expr() else break
-    endwhile
-    
-    return, node
-end
-
 
 ; At the end of each parse function, self.tag always points to the next
 ; un-processed token.
 function MidleParser::parse, line
     self.lexer.feed, line
-    self.getToken
+    
+    self.getToken ; Read the first token
+    
     if self.tag eq self.TOKEN.T_EOL then message, 'no code found'
+    
     node = self.parse_ternary_expr()
+    
+    if self.tag eq self.TOKEN.T_COMMA then begin
+        self.matchToken, self.TOKEN.T_COMMA
+        node = ProcCallNode(self.lexer.start_pos, node, self.parse_arglist())
+        
+    endif else if self.tag eq self.TOKEN.T_ASSIGN then begin
+        self.matchToken, self.TOKEN.T_ASSIGN
+        node = AssignNode(self.lexer.start_pos, node, self.parse_ternary_expr())
+    endif
+    
     if self.tag ne self.TOKEN.T_EOL then begin
         self.error, 'erroneous trailing characters'
     endif
+    
     return, node
 end
 
