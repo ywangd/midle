@@ -1,6 +1,6 @@
 
 pro AstNode::error, msg
-    message, string(self.colno, msg, format='("[Col ", I0, "] ", A)')
+    message, string(self.colno, msg, format='("RuntimeError [Col ", I0, "] ", A)')
 end
 
 

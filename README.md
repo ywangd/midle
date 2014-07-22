@@ -148,7 +148,6 @@ overcome (please let me know if there are ways to add them).
 - Creation and assignment of system variables
 - Parenthesis over assignment statement not supported, i.e. `x = (y = 42)`
 - Variable name cannot have `$` character
-- Do not support multiple statement on a single line by using `&` character
 
 ### By IDL's limitations
 - Output positional and keyword arguments not supported

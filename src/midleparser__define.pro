@@ -22,9 +22,9 @@ function MidleParser::parse_argument
             node = KeyargNode(self.lexer.start_pos, node, self.parse_ternary_expr())
         endif
     endelse
-    
+
     return, node
-    
+
 end
 
 function MidleParser::parse_arglist
@@ -108,7 +108,7 @@ end
 function MidleParser::parse_array_literal
     ; array_literal : '[' array_literal ']' | ternary_expr (',' '[' array_literal ']' | ternary_expr)*
     node = ArrayLiteralNode(self.lexer.start_pos)
-    
+
     if self.tag eq self.TOKEN.T_LBRACKET then begin
         self.matchToken, self.tag
         node.add, self.parse_array_literal()
@@ -116,7 +116,7 @@ function MidleParser::parse_array_literal
     endif else begin
         node.add, self.parse_ternary_expr()
     endelse
-    
+
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RBRACKET then begin
@@ -201,7 +201,7 @@ function MidleParser::parse_atom
             node = ListNode(self.lexer.start_pos, self.TOKEN.T_LPAREN)
         endelse
         self.matchToken, self.TOKEN.T_RPAREN
-        
+
     endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RBRACKET then begin
@@ -210,7 +210,7 @@ function MidleParser::parse_atom
             node = NullNode(self.lexer.start_pos, '[]')
         endelse
         self.matchToken, self.TOKEN.T_RBRACKET
-        
+
     endif else if self.tag eq self.TOKEN.T_LCURLY then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RCURLY then begin
@@ -219,7 +219,7 @@ function MidleParser::parse_atom
             node = ListNode(self.lexer.start_pos, self.TOKEN.T_LCURLY)
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
-        
+
     endif else if self.tag eq self.TOKEN.T_HASH_LCURLY then begin  ; hash literal
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RCURLY then begin
@@ -228,27 +228,27 @@ function MidleParser::parse_atom
             node = ListNode(self.lexer.start_pos, self.TOKEN.T_HASH_LCURLY)
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
-        
+
     endif else if self.tag eq self.TOKEN.T_IDENT then begin
         node = IdentNode(self.lexer.start_pos, self.lexeme)
         self.getToken
-        
+
     endif else if (typeCode = self.numberCode(self.tag)) ne -1 then begin
         node = NumberNode(self.lexer.start_pos, self.lexeme, typeCode)
         self.getToken
-        
+
     endif else if self.tag eq self.TOKEN.T_STRING then begin
         node = StringNode(self.lexer.start_pos, self.lexeme)
         self.getToken
-        
+
     endif else if self.tag eq self.TOKEN.T_NULL then begin
         node = NullNode(self.lexer.start_pos, self.lexeme)
         self.getToken
-        
+
     endif else if self.tag eq self.TOKEN.T_SYSV then begin
         node = SysvarNode(self.lexer.start_pos, self.lexeme)
         self.getToken
-        
+
     endif else begin
         self.error, 'Unrecognized token ' + self.lexeme
     endelse
@@ -363,29 +363,40 @@ end
 
 ; At the end of each parse function, self.tag always points to the next
 ; un-processed token.
-function MidleParser::parse, line
-    self.lexer.feed, line
+function MidleParser::parse, lines
+    self.lexer.feed, lines
     
+    ; The statement list
+    stmts = StmtListNode(self.lexer.start_pos)
+    ;
     self.getToken ; Read the first token
-    
-    if self.tag eq self.TOKEN.T_EOL then self.error, 'Code not found'
-    
-    node = self.parse_ternary_expr()
-    
-    if self.tag eq self.TOKEN.T_COMMA then begin
-        self.matchToken, self.TOKEN.T_COMMA
-        node = ProcCallNode(self.lexer.start_pos, node, self.parse_arglist())
-        
-    endif else if self.tag eq self.TOKEN.T_ASSIGN then begin
-        self.matchToken, self.TOKEN.T_ASSIGN
-        node = AssignNode(self.lexer.start_pos, node, self.parse_ternary_expr())
-    endif
-    
-    if self.tag ne self.TOKEN.T_EOL then begin
-        self.error, 'erroneous trailing characters'
-    endif
-    
-    return, node
+    ; Parse till the end of file is reached
+    while self.tag ne self.TOKEN.T_EOF do begin
+        if self.tag ne self.TOKEN.T_EOL then begin
+
+            node = self.parse_ternary_expr()
+
+            if self.tag eq self.TOKEN.T_COMMA then begin
+                self.matchToken, self.TOKEN.T_COMMA
+                node = ProcCallNode(self.lexer.start_pos, node, self.parse_arglist())
+
+            endif else if self.tag eq self.TOKEN.T_ASSIGN then begin
+                self.matchToken, self.TOKEN.T_ASSIGN
+                node = AssignNode(self.lexer.start_pos, node, self.parse_ternary_expr())
+            endif
+
+            if self.tag ne self.TOKEN.T_EOL then begin
+                self.error, 'Bad trailing characters'
+            endif
+            
+            stmts.add, node
+        endif
+        ; always advance to the next unprocessed token before next loop
+        self.getToken
+
+    endwhile
+
+    return, stmts
 end
 
 

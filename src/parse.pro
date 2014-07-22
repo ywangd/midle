@@ -1,8 +1,8 @@
 
 
-function parse, line
+function parse, lines
     
     p = MidleParser()
-    ast = p.parse(line)
+    ast = p.parse(lines)
     return, ast
 end

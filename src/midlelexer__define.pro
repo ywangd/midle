@@ -83,7 +83,7 @@ end
 
 pro MidleLexer::error, msg
     message, string(self.lookahead_pos-1, self.char, msg, $
-        format='("ERROR: column ", I0, " [", A1, "] ", A)')
+        format='("SyntaxError: Col ", I0, " [", A1, "] ", A)')
 end
 
 
@@ -126,9 +126,11 @@ function MidleLexer::getToken
 
     self.nextNonwhite
     ; We can check the line continuation and comments before checking for any
-    ; other tokens because no tokens begins with a $ or ;
+    ; other tokens because no tokens begins with a $ or ; or &
     if self.char eq '$' then begin
         self.nextContinuation
+    endif else if self.char eq '&' then begin
+        self.char = string(10B)  ; & is effectively a EOL
     endif else if self.char eq ';' then begin
         self.nextEOL
     endif

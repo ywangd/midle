@@ -1,5 +1,5 @@
 
-function midle, line, _env, ast=ast
+function midle, lines, _env, ast=ast
 
     if n_elements(_env) eq 0 then begin
         env = Dictionary()
@@ -14,7 +14,7 @@ function midle, line, _env, ast=ast
         message, 'Runtime environment must be either a Hash or Struct'
     endelse
 
-    ast = parse(line)
+    ast = parse(lines)
     res = ast.eval(env)
 
     if isa(_env, 'Struct') then _env = env.toStruct() else _env = env
@@ -24,8 +24,8 @@ function midle, line, _env, ast=ast
 end
 
 
-pro midle, line, _env, ast=ast
+pro midle, lines, _env, ast=ast
     
-    !NULL = midle(line, _env, ast=ast)
+    !NULL = midle(lines, _env, ast=ast)
     
 end
