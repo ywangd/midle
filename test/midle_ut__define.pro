@@ -216,6 +216,41 @@ function Midle_ut::test_member
     return, 1
 end
 
+function Midle_ut::test_assignment
+    env = obj_new('Dictionary')
+    assert, midle('x = 42', env) eq 42
+    assert, env.x eq 42
+    
+    assert, array_equal_exact(midle('a = indgen(10)', env), indgen(10))
+    assert, array_equal_exact(env.a, indgen(10))
+    
+    assert, midle('a[3] = 42', env) eq 42
+    assert, env["a", 3] eq 42
+    
+    !NULL = midle('h = h{}', env)
+    !NULL = midle('h["x"] = (42, indgen(3,4,5), 22, "hello", "world")', env)
+    assert, midle('h["x", 4] = "life"', env) eq 'life'
+    assert, env["h", "x", 4] eq 'life'
+    assert, midle('h["x", 1, 2, 3] = 99', env) eq 99
+    assert, env["h", "x", 1, 2, 3] eq 99
+    assert, midle('h["x", 1, 0:1, *, 0:4:2] = 42', env) eq 42
+    assert, array_equal_exact(env["h", "x", 1, 0:1, *, 0:4:2], make_array(2,4,3, value=42))
+    
+    !NULL = midle('st = {x: 4.2, y: 2.2}', env)
+    assert, midle('st.y = 4.2', env) eq 4.2
+    assert, env["st"].(1) eq 4.2
+    assert, midle('st.(0) = 2.2', env) eq 2.2
+    assert, env["st"].(0) eq 2.2
+    
+    !NULL = midle('st = {x: 4.2, y: indgen(3,4,5)}', env)
+    assert, midle('st.y[1,2,3] = 99', env) eq 99
+    assert, env["st"].(1)[1,2,3] eq 99
+    assert, midle('st.y[0:1, *, 0:4:2] = 42', env) eq 42
+    assert, array_equal_exact(env["st"].(1)[0:1, *, 0:4:2], make_array(2,4,3, value=42))
+    
+    return, 1
+end
+
 
 pro Midle_ut__define, class
     class = { Midle_ut, inherits MGutTestCase }

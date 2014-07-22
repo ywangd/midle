@@ -134,7 +134,7 @@ end
 
 
 function MidleParser::parse_trailer
-    ; trailer : (arglist) | [idxlist] | '.' IDENT
+    ; trailer : (arglist) | [idxlist] | '.' (IDENT | '(' ternary_expr ')' )
 
     if self.tag eq self.TOKEN.T_LPAREN then begin
 
@@ -157,11 +157,15 @@ function MidleParser::parse_trailer
 
     endif else begin ; T_DOT
         self.matchToken, self.TOKEN.T_DOT
-        if self.tag ne self.TOKEN.T_IDENT then begin
-            self.error, 'identifier expected'
-        endif else begin
+        if self.tag eq self.TOKEN.T_LPAREN then begin  ; index access of struct
+            self.matchToken, self.TOKEN.T_LPAREN
+            node = self.parse_ternary_expr()
+            self.matchToken, self.TOKEN.T_RPAREN
+        endif else if self.tag eq self.TOKEN.T_IDENT then begin
             node = IdentNode(self.lexer.start_pos, self.lexeme)
             self.matchToken, self.TOKEN.T_IDENT
+        endif else begin
+            self.error, 'identifier expected'
         endelse
     endelse
     return, node

@@ -1,14 +1,23 @@
 
+function SubscriptNode::eval_lhs, env, subs=subs, idxlist=idxlist
+    host = self.operands[0]
+    subs = self.operands[1]
+    idxlist = subs.operands
+    return, host
+end
+
+
 function SubscriptNode::eval, env
     
     collection = (self.operands[0]).eval(env)
-    nsubs = (self.operands[1]).operands.count()
+    subs =  self.operands[1]
+    nsubs = subs.operands.count()
     
     ; For Hash or list, only the first subscript is applied to the collection itself.
     ; The rest of the subscripts, if any, are applied to the child elements.
     currentIndex = 0
     while (isa(collection, 'List') || isa(collection, 'Hash')) && currentIndex lt nsubs do begin
-        idxlist = (self.operands[1]).eval(env, [n_elements(collection)], fromIndex=currentIndex, toIndex=currentIndex)
+        idxlist = subs.eval(env, [n_elements(collection)], fromIndex=currentIndex, toIndex=currentIndex)
         collection = collection[idxlist[0]]
         currentIndex += 1
     endwhile
@@ -30,7 +39,7 @@ function SubscriptNode::eval, env
     if n_elements(shp) lt 8 then shp = [shp, replicate(1, 8-n_elements(shp))]
     
     ; Evalulate what is left of the subscripts
-    idxlist = (self.operands[1]).eval(env, shp, fromIndex=currentIndex, isRanges=isRanges)
+    idxlist = subs.eval(env, shp, fromIndex=currentIndex, isRanges=isRanges)
     
     if max(isRanges) gt 0 then begin
         if idxlist.count() lt nd then idxlist.add, replicate(0, nd-idxlist.count()), /extract
