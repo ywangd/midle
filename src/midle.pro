@@ -22,3 +22,10 @@ function midle, line, _env, ast=ast
     return, res
 
 end
+
+
+pro midle, line, _env, ast=ast
+    
+    !NULL = midle(line, _env, ast=ast)
+    
+end

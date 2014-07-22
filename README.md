@@ -6,9 +6,10 @@ MIDLE implements its own parser and evaluates broad categories of IDL statements
 without resorting to the power of `EXECUTE`. It even adds additional language
 features such as syntax for HASH and LIST literals, higher level array
 concatenation, bettering support for chaining function/method calls and
-subscripts. It does, however, has limitations due to the limit of IDL language
-itself, notably output arguments and object property access (object method
-calls are OK). It also deliberately leaves out some IDL features by design.
+subscripts. MIDLE however is not without limitations. They are mostly due to the
+limit of IDL language itself, notably output arguments and object property
+access (object method calls are OK). It also deliberately leaves out some IDL
+features by design.
 
 MIDLE requires IDL 8.0 or up (8.3 is recommended).
 
@@ -44,14 +45,18 @@ IDL 8.0 or up is required as 8.0 features (e.g. `!NULL`, `Hash`, `List`, `isa`)
 are used extensively in the code. Version 8.3 is recommended for the new
 `Dictionary` class. However, a drop-in replacement of `Dictionary` class is
 provided with the package so MIDLE can be used with 8.0, 8.1 and 8.2. If you
-have IDL 8.3, it is recommended to remove the `dictionary__define.pro` file to
-ensure the built-in `Dictionary` class is used.
+have access to IDL 8.3, the file, `dictionary.pro`, can be removed to ensure
+the built-in `Dictionary` class is used.
 
 ## Usage
 To use MIDLE, simply pass a string of IDL statement or expression to the
 function `midle`. Here is the classic Hello World example:
 ```IDL
 print, midle('"Hello, World!"')
+```
+A procedure interface is also available if the return value is of no interest.
+```IDL
+midle, 'print, "Hello, World!"'
 ```
 
 The second argument can be used to pass values to variables in the expression.
@@ -71,6 +76,11 @@ Procedure call is supported. Note that a procedure call always returns the
 ```IDL
 print, midle('plot, indgen(50, start=100), /ynozero')
 ```
+Alternatively, the procedure version can be used:
+```IDL
+midle, 'plot, indgen(50, start=100), /ynozero'
+```
+
 
 Almost all arithmetic, logical, bitwise, relational, matrix, ternary operators
 are supported. The exceptions are compound operators such as `++`, `+=`.
@@ -137,6 +147,7 @@ overcome (please let me know if there are ways to add them).
 - The `->` operator not supported as most times it can be replaced by `.`
 - Creation and assignment of system variables
 - Parenthesis over assignment statement not supported, i.e. `x = (y = 42)`
+- Variable name cannot have `$` character
 
 ### By IDL's limitations
 - Output positional and keyword arguments not supported

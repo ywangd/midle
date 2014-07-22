@@ -13,7 +13,7 @@ function AssignNode::eval, env
     ;      e.g. s.x[0] = 99 where s = {x: indgen(10)}
     ;   4. identifier with dot notation for indexing a hash like object or struct, e.g. h.x
 
-    if n_elements(env) eq 0 then env = obj_new('Dictionary')
+    if n_elements(env) eq 0 then env = Dictionary()
 
     if isa(lhs, 'IdentNode') then begin
         varname = lhs.eval(env, /lexeme)

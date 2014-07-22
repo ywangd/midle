@@ -217,7 +217,7 @@ function Midle_ut::test_member
 end
 
 function Midle_ut::test_assignment
-    env = obj_new('Dictionary')
+    env = Dictionary()
     assert, midle('x = 42', env) eq 42
     assert, env.x eq 42
     
