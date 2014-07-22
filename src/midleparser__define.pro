@@ -368,7 +368,7 @@ function MidleParser::parse, line
     
     self.getToken ; Read the first token
     
-    if self.tag eq self.TOKEN.T_EOL then message, 'no code found'
+    if self.tag eq self.TOKEN.T_EOL then self.error, 'Code not found'
     
     node = self.parse_ternary_expr()
     

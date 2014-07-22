@@ -2,7 +2,8 @@
 function getTokenCodes
 
     TOKEN = Dictionary()
-    TOKEN.T_EOL = 0
+    TOKEN.T_EOF = 0
+    TOKEN.T_EOL = 10
     TOKEN.T_NULL = 256
     TOKEN.T_BYTE = 257
     TOKEN.T_INT =  258
@@ -43,6 +44,8 @@ function getTokenCodes
     TOKEN.T_COLON = 333
     TOKEN.T_COMMA = 334
     TOKEN.T_ASSIGN = 335
+    TOKEN.T_SEMICOLON = 336
+    TOKEN.T_DOLLAR = 337
     TOKEN.T_LPAREN = 341
     TOKEN.T_RPAREN = 342
     TOKEN.T_LBRACKET = 343

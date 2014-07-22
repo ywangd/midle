@@ -1,7 +1,7 @@
 
-function lex, line
+function lex, lines
     lexer = MidleLexer()
-    stream = lexer.lex(line)
+    stream = lexer.lex(lines)
     
     return, stream
 end

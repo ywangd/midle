@@ -20,12 +20,45 @@ function isAlnum, c
     if isDigit(c) || isAlpha(c) then return, 1 else return, 0
 end
 
+pro MidleLexer::nextNonwhite
+    while isWhite(self.char) do self.nextc
+end
+
+pro MidleLexer::nextEOL
+    while self.char ne string(10B) do self.nextc
+end
+
+; The continuation symbol requires requires any trailing characters and read
+; until a non-empty, non-comment, and non-$ line is found.
+; A $ line is a line starts with a $ symbol excluding preceeding whitespaces 
+pro MidleLexer::nextContinuation
+    repeat begin
+        self.nextEOL
+        self.nextc
+        self.nextNonwhite
+    endrep until (self.char ne '$' && self.char ne ';' && self.char ne string(10B))
+end
 
 pro MidleLexer::nextc
     ; lookahead_pos is always 1 ahead of the char
     ; always return char as uppercase
+    
+    if self.lookahead_pos gt self.buflen then begin
+        if self.lineno lt self.lines.count() -1 then begin
+            self.lineno += 1
+            self.buffer = (self.lines)[self.lineno]
+            self.buflen = strlen(self.buffer)
+            self.lookahead_pos = 0L
+        endif else begin
+            self.char = ''  ; end of file reached
+            return
+        endelse
+    endif    
+    
     self.char = strupcase(strmid(self.buffer, self.lookahead_pos, 1))
     self.lookahead_pos += 1
+    if self.char eq '' then self.char = string(10B)
+    
 end
 
 
@@ -49,7 +82,6 @@ function MidleLexer::keywordLookup
 end
 
 pro MidleLexer::error, msg
-    on_error, 1
     message, string(self.lookahead_pos-1, self.char, msg, $
         format='("ERROR: column ", I0, " [", A1, "] ", A)')
 end
@@ -92,13 +124,24 @@ end
 ; that is not processed. lookahead_pos is one position further to the right.
 function MidleLexer::getToken
 
-    while isWhite(self.char) do self.nextc
-
+    self.nextNonwhite
+    ; We can check the line continuation and comments before checking for any
+    ; other tokens because no tokens begins with a $ or ;
+    if self.char eq '$' then begin
+        self.nextContinuation
+    endif else if self.char eq ';' then begin
+        self.nextEOL
+    endif
+    
     self.start_pos = self.lookahead_pos - 1
 
     case 1 of
 
-        self.char eq '': return, self.TOKEN.T_EOL
+        self.char eq '': return, self.TOKEN.T_EOF
+        self.char eq string(10B): begin
+            self.nextc
+            return, self.TOKEN.T_EOL
+        end
 
         self.char eq '+': begin
             self.nextc
@@ -346,28 +389,34 @@ function MidleLexer::getToken
     endcase
 end
 
-function MidleLexer::lex, line
-    self.feed, line
+function MidleLexer::lex, lines
+    self.feed, lines
     ret = list()
     repeat begin
         token = self.getToken()
         t = strupcase((self.TOKEN.where(token))[0])
         s = self.getLexeme()
         ret.add, [t, s]
-    endrep until token eq self.TOKEN.T_EOL
+    endrep until token eq self.TOKEN.T_EOF
     
     return, ret
 end
 
 
-pro MidleLexer::feed, line
-    self.buffer = line
+pro MidleLexer::feed, lines
+    self.lines.remove, /all
+    
+    self.lines.add, lines, /extract
+    self.buffer = (self.lines)[0]
+    self.buflen = strlen(self.buffer)
+    self.lineno = 0
     self.lookahead_pos = 0L
     self.nextc
 end
 
 
-pro MidleLexer::getProperty, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos
+pro MidleLexer::getProperty, lineno=lineno, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos
+    lineno = self.lineno
     lookahead_pos = self.lookahead_pos
     char = self.char
     start_pos = self.start_pos
@@ -378,10 +427,14 @@ pro MidleLexer::cleanup
 end
 
 
-function MidleLexer::init, line
-
-    if n_elements(line) ne 0 then begin
-        self.buffer = line
+function MidleLexer::init, lines
+    self.lines = list()
+    
+    if n_elements(lines) ne 0 then begin
+        self.lines.add, lines, /extract
+        self.buffer = (self.lines)[0]
+        self.buflen = strlen(self.buffer)
+        self.lineno = 0
         self.lookahead_pos = 0L
         self.nextc
     endif
@@ -407,7 +460,10 @@ end
 pro MidleLexer__define, class
 
     class = {MidleLexer, inherits IDL_Object, $
+        lines: list(), $
         buffer: '', $
+        buflen: 0L, $
+        lineno: 0L, $
         lookahead_pos: 0L, $
         char: '', $
         start_pos: 0L, $
