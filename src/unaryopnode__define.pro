@@ -2,7 +2,7 @@
 
 
 function UnaryOpNode::eval, env
-    TOKEN = self.TOKEN
+    TOKEN = self.lexer.TOKEN
     val = self.operands[0].eval(env)
     case self.operator of
         TOKEN.T_ADD: 
@@ -15,7 +15,7 @@ function UnaryOpNode::eval, env
 end
 
 function UnaryOpNode::print_helper
-    return, string(self.name(), strupcase((self.TOKEN.where(self.operator))[0]), $
+    return, string(self.name(), strupcase((self.lexer.TOKEN.where(self.operator))[0]), $
         format='(A, " ''",A,"''")')
 end
 

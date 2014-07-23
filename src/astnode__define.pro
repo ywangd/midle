@@ -45,7 +45,13 @@ function AstNode::getOperand, idx
     return, (self.operands)[idx]
 end
 
-pro AstNode::getProperty, lineno=lineno, colno=colno, operands=operands
+pro AstNode::setProperty, lineno=lineno, colno=colno
+    if n_elements(lineno) ne 0 then self.lineno = lineno
+    if n_elements(colno) ne 0 then self.colno = colno
+end
+
+pro AstNode::getProperty, lexer=lexer, lineno=lineno, colno=colno, operands=operands
+    if arg_present(lexer) then lexer = self.lexer
     lineno = self.lineno
     colno = self.colno
     if arg_present(operands) then operands = self.operands
@@ -55,17 +61,18 @@ end
 pro AstNode::cleanup
 end
 
-function AstNode::init, colno
+function AstNode::init, lexer
     if ~self->IDL_Object::init() then return, 0
-    self.colno = colno
-    self.TOKEN = getTokenCodes()
+    self.lexer = lexer
+    self.lineno = self.lexer.lineno
+    self.colno = self.lexer.start_pos
     self.operands = list()
     return, 1
 end
 
 pro AstNode__define, class
     class = {AstNode, inherits IDL_Object, $
-        TOKEN: obj_new(), $
+        lexer: obj_new(), $
         operands: obj_new(), $
         lineno: 0L, $
         colno: 0L }

@@ -41,7 +41,7 @@ function AssignNode::eval, env
                 idxToStruct = structField.eval(env)
             endelse
             
-            node = SubscriptNode(0, IdentNode(0, 'a'), subs)
+            node = SubscriptNode(self.lexer, IdentNode(self.lexer, 'a'), subs)
             shp = size(host.eval(env), /dimension)
             if isa(shp, /scalar) then shp = [1]
             index = node.eval(hash('a', lindgen(shp)))
@@ -75,9 +75,9 @@ function AssignNode::eval, env
                 parentVal[sub] = rhsval
             endif else begin
                 ; delegate the subscript task to a new subscript node
-                ilnode = IdxlistNode(0)
+                ilnode = IdxlistNode(self.lexer)
                 for jj=ii, nsubs -1 do ilnode.add, idxlist[jj]
-                node = SubscriptNode(0, IdentNode(0, 'a'), ilnode)
+                node = SubscriptNode(self.lexer, IdentNode(self.lexer, 'a'), ilnode)
                 shp = size(hostVal, /dimension)
                 if isa(shp, /scalar) then shp = [1]
                 index = node.eval(hash('a', lindgen(shp)))

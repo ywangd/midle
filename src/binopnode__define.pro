@@ -2,7 +2,7 @@
 
 
 function BinOpNode::eval, env
-    TOKEN = self.TOKEN
+    TOKEN = self.lexer.TOKEN
     val1 = self.operands[0].eval(env)
     val2 = self.operands[1].eval(env)
     case self.operator of
@@ -34,7 +34,7 @@ end
 
 
 function BinOpNode::print_helper
-    return, string(self.name(), strupcase((self.TOKEN.where(self.operator))[0]), $
+    return, string(self.name(), strupcase((self.lexer.TOKEN.where(self.operator))[0]), $
         format='(A, " ''", A, "''")')
 end
 

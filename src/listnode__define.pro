@@ -2,7 +2,7 @@
 
 function ListNode::eval, env
 
-    TOKEN = self.TOKEN
+    TOKEN = self.lexer.TOKEN
 
     if self.operator eq TOKEN.T_HASH_LCURLY then begin
         
@@ -35,7 +35,7 @@ function ListNode::eval, env
 end
 
 function ListNode::print_helper
-    return, string(self.name(), strupcase((self.TOKEN.where(self.operator))[0]), $
+    return, string(self.name(), strupcase((self.lexer.TOKEN.where(self.operator))[0]), $
         format='(A, " ''",A,"''")')
 end
 

@@ -8,8 +8,8 @@ function MidleParser::parse_argument
     if self.tag eq self.TOKEN.T_DIV then begin
         self.matchToken, self.tag
         if self.tag eq self.TOKEN.T_IDENT then begin
-            node = KeyargNode(self.lexer.start_pos, $
-                IdentNode(self.lexer.start_pos, self.lexeme), NumberNode(self.lexer.start_pos, '1', 2))
+            node = KeyargNode(self.lexer, $
+                IdentNode(self.lexer, self.lexeme), NumberNode(self.lexer, '1', 2))
             self.matchToken, self.TOKEN.T_IDENT
         endif else begin
             self.error, 'identifier expected for keyword argument'
@@ -19,7 +19,7 @@ function MidleParser::parse_argument
         if self.tag eq self.token.t_assign then begin
             if ~isa(node, 'IdentNode') then self.error, 'identifier expected for keyword argument'
             self.matchToken, self.tag
-            node = KeyargNode(self.lexer.start_pos, node, self.parse_ternary_expr())
+            node = KeyargNode(self.lexer, node, self.parse_ternary_expr())
         endif
     endelse
 
@@ -29,7 +29,7 @@ end
 
 function MidleParser::parse_arglist
     ; arglist : argument (',' argument)*
-    node = ArglistNode(self.lexer.start_pos)
+    node = ArglistNode(self.lexer)
     node.add, self.parse_argument()
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
@@ -41,7 +41,7 @@ end
 function MidleParser::parse_deflist, operator
     ; deflist : ternary_expr : ternary_expr (',' ternary_expr : ternary_expr) [',']
     ; The key of Hash literal must be String or Number, this is checked during eval
-    node = ListNode(self.lexer.start_pos, operator)
+    node = ListNode(self.lexer, operator)
     node.add, self.parse_ternary_expr()
     self.matchToken, self.TOKEN.T_COLON
     node.add, self.parse_ternary_expr()
@@ -61,7 +61,7 @@ function MidleParser::parse_sliceop, node
     ; sliceop : ':' (ternary_expr | '*') [':' (ternary_expr | '*')]
     self.matchToken, self.TOKEN.T_COLON
     if self.tag eq self.TOKEN.T_MUL then begin
-        node.add, WildcardNode(self.lexer.start_pos, self.lexeme)
+        node.add, WildcardNode(self.lexer, self.lexeme)
         self.matchToken, self.TOKEN.T_MUL
     endif else begin
         node.add, self.parse_ternary_expr()
@@ -69,7 +69,7 @@ function MidleParser::parse_sliceop, node
     if self.tag eq self.TOKEN.T_COLON then begin
         self.matchToken, self.token.t_colon
         if self.tag eq self.TOKEN.T_MUL then begin
-            node.add, WildcardNode(self.lexer.start_pos, self.lexeme)
+            node.add, WildcardNode(self.lexer, self.lexeme)
             self.matchToken, self.TOKEN.T_MUL
         endif else begin
             node.add, self.parse_ternary_expr()
@@ -81,9 +81,9 @@ end
 function MidleParser::parse_idx
     ; idx : (ternary_expr | '*') [sliceop]
     ; The indices must be integers. Ths is ensured during eval.
-    node = IndexNode(self.lexer.start_pos)
+    node = IndexNode(self.lexer)
     if self.tag eq self.TOKEN.T_MUL then begin
-        node.add, WildcardNode(self.lexer.start_pos, self.lexeme)
+        node.add, WildcardNode(self.lexer, self.lexeme)
         self.matchToken, self.tag
     endif else begin
         node.add, self.parse_ternary_expr()
@@ -96,7 +96,7 @@ end
 
 function MidleParser::parse_idxlist
     ; idxlist : idx (, idx)*
-    node = IdxlistNode(self.lexer.start_pos)
+    node = IdxlistNode(self.lexer)
     node.add, self.parse_idx()
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
@@ -107,7 +107,7 @@ end
 
 function MidleParser::parse_array_literal
     ; array_literal : '[' array_literal ']' | ternary_expr (',' '[' array_literal ']' | ternary_expr)*
-    node = ArrayLiteralNode(self.lexer.start_pos)
+    node = ArrayLiteralNode(self.lexer)
 
     if self.tag eq self.TOKEN.T_LBRACKET then begin
         self.matchToken, self.tag
@@ -142,7 +142,7 @@ function MidleParser::parse_trailer
         if self.tag ne self.TOKEN.T_RPAREN then begin
             node = self.parse_arglist()
         endif else begin
-            node = ArglistNode(self.lexer.start_pos)
+            node = ArglistNode(self.lexer)
         endelse
         self.matchToken, self.TOKEN.T_RPAREN
 
@@ -162,7 +162,7 @@ function MidleParser::parse_trailer
             node = self.parse_ternary_expr()
             self.matchToken, self.TOKEN.T_RPAREN
         endif else if self.tag eq self.TOKEN.T_IDENT then begin
-            node = IdentNode(self.lexer.start_pos, self.lexeme)
+            node = IdentNode(self.lexer, self.lexeme)
             self.matchToken, self.TOKEN.T_IDENT
         endif else begin
             self.error, 'identifier expected'
@@ -180,7 +180,7 @@ function MidleParser::parse_expr_list, ldelimiter, rdelimiter
     while self.tag eq self.TOKEN.T_COMMA do begin
         self.matchToken, self.tag
         if ~isa(node, 'ListNode') then begin
-            node = ListNode(self.lexer.start_pos, ldelimiter, node)
+            node = ListNode(self.lexer, ldelimiter, node)
         endif
         ; An optional comma is allowed at the end. This is important as it is required
         ; to defferiate whether the code is a number (1) or a list (1,)
@@ -198,7 +198,7 @@ function MidleParser::parse_atom
         if self.tag ne self.TOKEN.T_RPAREN then begin
             node = self.parse_expr_list(self.TOKEN.T_LPAREN, self.TOKEN.T_RPAREN)
         endif else begin
-            node = ListNode(self.lexer.start_pos, self.TOKEN.T_LPAREN)
+            node = ListNode(self.lexer, self.TOKEN.T_LPAREN)
         endelse
         self.matchToken, self.TOKEN.T_RPAREN
 
@@ -207,7 +207,7 @@ function MidleParser::parse_atom
         if self.tag ne self.TOKEN.T_RBRACKET then begin
             node = self.parse_array_literal()
         endif else begin
-            node = NullNode(self.lexer.start_pos, '[]')
+            node = NullNode(self.lexer, '[]')
         endelse
         self.matchToken, self.TOKEN.T_RBRACKET
 
@@ -216,7 +216,7 @@ function MidleParser::parse_atom
         if self.tag ne self.TOKEN.T_RCURLY then begin
             node = self.parse_deflist(self.TOKEN.T_LCURLY)
         endif else begin
-            node = ListNode(self.lexer.start_pos, self.TOKEN.T_LCURLY)
+            node = ListNode(self.lexer, self.TOKEN.T_LCURLY)
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
 
@@ -225,28 +225,28 @@ function MidleParser::parse_atom
         if self.tag ne self.TOKEN.T_RCURLY then begin
             node = self.parse_deflist(self.TOKEN.T_HASH_LCURLY)
         endif else begin
-            node = ListNode(self.lexer.start_pos, self.TOKEN.T_HASH_LCURLY)
+            node = ListNode(self.lexer, self.TOKEN.T_HASH_LCURLY)
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
 
     endif else if self.tag eq self.TOKEN.T_IDENT then begin
-        node = IdentNode(self.lexer.start_pos, self.lexeme)
+        node = IdentNode(self.lexer, self.lexeme)
         self.getToken
 
     endif else if (typeCode = self.numberCode(self.tag)) ne -1 then begin
-        node = NumberNode(self.lexer.start_pos, self.lexeme, typeCode)
+        node = NumberNode(self.lexer, self.lexeme, typeCode)
         self.getToken
 
     endif else if self.tag eq self.TOKEN.T_STRING then begin
-        node = StringNode(self.lexer.start_pos, self.lexeme)
+        node = StringNode(self.lexer, self.lexeme)
         self.getToken
 
     endif else if self.tag eq self.TOKEN.T_NULL then begin
-        node = NullNode(self.lexer.start_pos, self.lexeme)
+        node = NullNode(self.lexer, self.lexeme)
         self.getToken
 
     endif else if self.tag eq self.TOKEN.T_SYSV then begin
-        node = SysvarNode(self.lexer.start_pos, self.lexeme)
+        node = SysvarNode(self.lexer, self.lexeme)
         self.getToken
 
     endif else begin
@@ -266,18 +266,18 @@ function MidleParser::parse_power
         ; brackets etc.
         ;node = self.parse_trailer()
         if self.tag eq self.TOKEN.T_LPAREN then begin
-            node = FuncCallNode(self.lexer.start_pos, node, self.parse_trailer())
+            node = FuncCallNode(self.lexer, node, self.parse_trailer())
         endif else if self.tag eq self.TOKEN.T_LBRACKET then begin
-            node = SubscriptNode(self.lexer.start_pos, node, self.parse_trailer())
+            node = SubscriptNode(self.lexer, node, self.parse_trailer())
         endif else begin ; T_DOT
-            node = MemberNode(self.lexer.start_pos, node, self.parse_trailer())
+            node = MemberNode(self.lexer, node, self.parse_trailer())
         endelse
 
     endwhile
 
     if self.tag eq self.TOKEN.T_EXP then begin
         self.matchToken, (tag = self.tag)
-        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_factor())
+        node = BinOpNode(self.lexer, tag, node, self.parse_factor())
     endif
 
     return, node
@@ -287,7 +287,7 @@ function MidleParser::parse_factor
     ; factor : ('+' | '-' | 'NOT' | '~') factor | power
     if self.isUnaryOperator(self.tag) then begin
         self.matchToken, (tag = self.tag)
-        node = UnaryOpNode(self.lexer.start_pos, tag, self.parse_factor())
+        node = UnaryOpNode(self.lexer, tag, self.parse_factor())
     endif else begin
         node = self.parse_power()
     endelse
@@ -299,7 +299,7 @@ function MidleParser::parse_term_expr
     node = self.parse_factor()
     while self.isTermOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_factor())
+        node = BinOpNode(self.lexer, tag, node, self.parse_factor())
     endwhile
     return, node
 end
@@ -309,7 +309,7 @@ function MidleParser::parse_arith_expr
     node = self.parse_term_expr()
     while self.isArithOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_term_expr())
+        node = BinOpNode(self.lexer, tag, node, self.parse_term_expr())
     endwhile
     return, node
 end
@@ -319,7 +319,7 @@ function MidleParser::parse_relational_expr
     node = self.parse_arith_expr()
     while self.isRelationOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_arith_expr())
+        node = BinOpNode(self.lexer, tag, node, self.parse_arith_expr())
     endwhile
     return, node
 end
@@ -330,7 +330,7 @@ function MidleParser::parse_bitwise_expr
     node = self.parse_relational_expr()
     while self.isBitWiseOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_relational_expr())
+        node = BinOpNode(self.lexer, tag, node, self.parse_relational_expr())
     endwhile
     return, node
 end
@@ -341,7 +341,7 @@ function MidleParser::parse_logical_expr
     node = self.parse_bitwise_expr()
     while self.isLogicalOperator(self.tag) do begin
         self.matchToken, (tag = self.tag)
-        node = BinOpNode(self.lexer.start_pos, tag, node, self.parse_bitwise_expr())
+        node = BinOpNode(self.lexer, tag, node, self.parse_bitwise_expr())
     endwhile
     return, node
 end
@@ -355,7 +355,7 @@ function MidleParser::parse_ternary_expr
         node_true = self.parse_logical_expr()
         self.matchToken, self.TOKEN.T_COLON
         node_false = self.parse_logical_expr()
-        node = TerneryOpNode(self.lexer.start_pos, node, node_true, node_false)
+        node = TerneryOpNode(self.lexer, node, node_true, node_false)
     endif
     return, node
 end
@@ -367,7 +367,7 @@ function MidleParser::parse, lines
     self.lexer.feed, lines
     
     ; The statement list
-    stmts = StmtListNode(self.lexer.start_pos)
+    stmts = StmtListNode(self.lexer)
     ;
     self.getToken ; Read the first token
     ; Parse till the end of file is reached
@@ -378,11 +378,11 @@ function MidleParser::parse, lines
 
             if self.tag eq self.TOKEN.T_COMMA then begin
                 self.matchToken, self.TOKEN.T_COMMA
-                node = ProcCallNode(self.lexer.start_pos, node, self.parse_arglist())
+                node = ProcCallNode(self.lexer, node, self.parse_arglist())
 
             endif else if self.tag eq self.TOKEN.T_ASSIGN then begin
                 self.matchToken, self.TOKEN.T_ASSIGN
-                node = AssignNode(self.lexer.start_pos, node, self.parse_ternary_expr())
+                node = AssignNode(self.lexer, node, self.parse_ternary_expr())
             endif
 
             if self.tag ne self.TOKEN.T_EOL then begin

@@ -417,11 +417,12 @@ pro MidleLexer::feed, lines
 end
 
 
-pro MidleLexer::getProperty, lineno=lineno, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos
+pro MidleLexer::getProperty, lineno=lineno, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos, TOKEN=TOKEN
     lineno = self.lineno
     lookahead_pos = self.lookahead_pos
     char = self.char
     start_pos = self.start_pos
+    if arg_present(TOKEN) then TOKEN = self.TOKEN
 end
 
 
