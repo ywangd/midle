@@ -1,5 +1,7 @@
 
-function midle, lines, _env, ast=ast
+function midle, lines, fliename=filename, _env, ast=ast
+
+    if n_elements(filename) ne 0 then lines = midleRead(filename)
 
     if n_elements(_env) eq 0 then begin
         env = Dictionary()

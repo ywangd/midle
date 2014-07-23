@@ -130,7 +130,7 @@ function MidleLexer::getToken
     if self.char eq '$' then begin
         self.nextContinuation
     endif else if self.char eq '&' then begin
-        self.char = string(10B)  ; & is effectively a EOL
+        self.char = string(10B)  ; & is effectively an EOL
     endif else if self.char eq ';' then begin
         self.nextEOL
     endif

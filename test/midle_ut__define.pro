@@ -251,6 +251,26 @@ function Midle_ut::test_assignment
     return, 1
 end
 
+function Midle_ut::test_file
+    file = filepath('script.pro', root=cgsourcedir())
+    lines = []
+    line = ''
+    openr, lun, file, /get_lun
+    while ~eof(lun) do begin
+        readf, lun, line
+        lines = [lines, line]
+    endwhile
+    free_lun, lun
+    midle, lines, env
+    assert, array_equal_exact(env.a, indgen(3,4,5))
+    assert, array_equal_exact((env.h)['z', 3], indgen(3,4,5)+42)
+    assert, (env.h)['x'] eq 2.2
+    assert, (env.h)['y'] eq 4.2
+    assert, (env.h)['x'] + (env.h)['x'] eq (env.h)['xx']
+    
+    return, 1
+end
+
 
 pro Midle_ut__define, class
     class = { Midle_ut, inherits MGutTestCase }

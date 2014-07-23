@@ -55,9 +55,9 @@ end
 pro AstNode::cleanup
 end
 
-function AstNode::init, start_pos
+function AstNode::init, colno
     if ~self->IDL_Object::init() then return, 0
-    self.colno = start_pos
+    self.colno = colno
     self.TOKEN = getTokenCodes()
     self.operands = list()
     return, 1
