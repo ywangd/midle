@@ -1,0 +1,7 @@
+st = {x: 42, y: 22}
+@input01
+
+h.x = st.x
+h.y = st.y
+
+h['st'] = st

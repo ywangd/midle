@@ -1,7 +1,8 @@
 
-function midle, lines, fliename=filename, _env, ast=ast
-
-    if n_elements(filename) ne 0 then lines = midleRead(filename)
+function midle, _lines_or_file, _env, file=file, ast=ast
+    compile_opt logical_predicate
+    
+    if keyword_set(file) then lines = midleRead(_lines_or_file) else lines = _lines_or_file
 
     if n_elements(_env) eq 0 then begin
         env = Dictionary()
@@ -26,8 +27,8 @@ function midle, lines, fliename=filename, _env, ast=ast
 end
 
 
-pro midle, lines, _env, ast=ast
+pro midle, _lines_or_file, _env, file=file, ast=ast
     
-    !NULL = midle(lines, _env, ast=ast)
+    !NULL = midle(_lines_or_file, _env, file=file, ast=ast)
     
 end
