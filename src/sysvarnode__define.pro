@@ -22,7 +22,7 @@ function SysvarNode::eval, env
         '!MAP': return, !MAP
         '!MORE': return, !MORE
         '!MOUSE': return, !MOUSE
-        ; !NULL is supported separated by dedicate NullNode 
+        ; !NULL is supported separated by the dedicate NullNode 
         '!ORDER': return, !ORDER
         '!P': return, !P
         '!PATH': return, !PATH
@@ -36,7 +36,7 @@ function SysvarNode::eval, env
         '!X': return, !X
         '!Y': return, !Y
         '!Z': return, !Z
-        else: self.error, 'Unrecognized system variable'
+        else: self.error, 'Unrecognized system variable: ' + self.lexeme
     endcase
 end
 

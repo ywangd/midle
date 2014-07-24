@@ -12,7 +12,7 @@ function ListNode::eval, env
             if isa(key, /number, /scalar) || isa(key, 'String', /scalar) then begin
                 ret[key] = (self.operands[i+1]).eval(env)
             endif else begin
-                self.error, 'Invalid Hash key ' + strtrim(key,2)
+                self.error, 'Invalid Hash key:' + strtrim(key,2)
             endelse
         endfor
 

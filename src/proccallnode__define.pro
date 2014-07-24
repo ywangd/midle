@@ -39,7 +39,7 @@ function ProcCallNode::eval, env
             else: self.error, 'Too many positional arguments'
         endcase
     endif else begin
-        self.error, 'Invalid function call'
+        self.error, 'Invalid procedure call'
     endelse
 
     return, !NULL

@@ -30,7 +30,7 @@ end
 
 ; The continuation symbol requires requires any trailing characters and read
 ; until a non-empty, non-comment, and non-$ line is found.
-; A $ line is a line starts with a $ symbol excluding preceeding whitespaces 
+; A $ line is a line starts with a $ symbol excluding preceeding whitespaces
 pro MidleLexer::nextContinuation
     repeat begin
         self.nextEOL
@@ -42,7 +42,7 @@ end
 pro MidleLexer::nextc
     ; lookahead_pos is always 1 ahead of the char
     ; always return char as uppercase
-    
+
     if self.lookahead_pos gt self.buflen then begin
         if self.lineno lt self.lines.count() -1 then begin
             self.lineno += 1
@@ -53,18 +53,18 @@ pro MidleLexer::nextc
             self.char = ''  ; end of file reached
             return
         endelse
-    endif    
-    
+    endif
+
     self.char = strupcase(strmid(self.buffer, self.lookahead_pos, 1))
     self.lookahead_pos += 1
     if self.char eq '' then self.char = string(10B)
-    
+
 end
 
 
 pro MidleLexer::matchc, c
     self.nextc
-    if self.char ne c then self.error, 'syntax error - ' + c + ' expected'
+    if self.char ne c then self.error, 'Bad character: ' + c + ' expected'
 end
 
 
@@ -82,8 +82,16 @@ function MidleLexer::keywordLookup
 end
 
 pro MidleLexer::error, msg
-    message, string(self.lookahead_pos-1, self.char, msg, $
-        format='("SyntaxError: Col ", I0, " [", A1, "] ", A)')
+    print
+    print, !error_state.msg_prefix, ' [SyntaxError] ', msg
+    print, !error_state.msg_prefix, ' Line ', strtrim(self.lineno+1,2) + ', Col ', strtrim(self.lookahead_pos,2)
+    print, self.getLine(self.lineno)
+    leadingSpace = ''
+    if self.lookahead_pos-1 gt 0 then leadingSpace = strjoin(replicate(' ', self.lookahead_pos-1))
+    print, leadingSpace, '^'
+    print
+    message, 'MIDLE_LEXER_ERR - ' + msg, /noprint, /noname, /noprefix
+
 end
 
 
@@ -95,11 +103,11 @@ function MidleLexer::processScientificNotation, notation
         ; Otherwise digit is optional as 42D or 42E are both valid.
         if ~isDigit(self.char) then self.error, "Digits expected"
     endif
-    
+
     while isDigit(self.char) do begin
         self.nextc
     endwhile
-    
+
     if notation eq 'E' then return, self.TOKEN.T_FLOAT else return, self.TOKEN.T_DOUBLE
 end
 
@@ -132,263 +140,263 @@ function MidleLexer::getToken
     endif else if self.char eq '&' then begin
         self.char = string(10B)  ; & is effectively an EOL
     endif else if self.char eq ';' then begin
-        self.nextEOL
-    endif
-    
-    self.start_pos = self.lookahead_pos - 1
+    self.nextEOL
+endif
 
-    case 1 of
+self.start_pos = self.lookahead_pos - 1
 
-        self.char eq '': return, self.TOKEN.T_EOF
-        self.char eq string(10B): begin
+case 1 of
+
+    self.char eq '': return, self.TOKEN.T_EOF
+    self.char eq string(10B): begin
+        self.nextc
+        return, self.TOKEN.T_EOL
+    end
+
+    self.char eq '+': begin
+        self.nextc
+        return, self.TOKEN.T_ADD
+    end
+
+    self.char eq '-': begin
+        self.nextc
+        if self.char eq '>' then begin
             self.nextc
-            return, self.TOKEN.T_EOL
-        end
+            return, self.TOKEN.T_ARROW
+        endif else begin
+            return, self.TOKEN.T_SUB
+        endelse
+    end
 
-        self.char eq '+': begin
-            self.nextc
-            return, self.TOKEN.T_ADD
-        end
+    self.char eq '*': begin
+        self.nextc
+        return, self.TOKEN.T_MUL
+    end
 
-        self.char eq '-': begin
-            self.nextc
-            if self.char eq '>' then begin
-                self.nextc
-                return, self.TOKEN.T_ARROW
-            endif else begin
-                return, self.TOKEN.T_SUB
-            endelse
-        end
+    self.char eq '/': begin
+        self.nextc
+        return, self.TOKEN.T_DIV
+    end
 
-        self.char eq '*': begin
-            self.nextc
-            return, self.TOKEN.T_MUL
-        end
+    self.char eq '^': begin
+        self.nextc
+        return, self.TOKEN.T_EXP
+    end
 
-        self.char eq '/': begin
-            self.nextc
-            return, self.TOKEN.T_DIV
-        end
+    self.char eq '>': begin
+        self.nextc
+        return, self.TOKEN.T_MAX
+    end
 
-        self.char eq '^': begin
-            self.nextc
-            return, self.TOKEN.T_EXP
-        end
+    self.char eq '<': begin
+        self.nextc
+        return, self.TOKEN.T_MIN
+    end
 
-        self.char eq '>': begin
-            self.nextc
-            return, self.TOKEN.T_MAX
-        end
+    self.char eq '?': begin
+        self.nextc
+        return, self.TOKEN.T_QMARK
+    end
 
-        self.char eq '<': begin
-            self.nextc
-            return, self.TOKEN.T_MIN
-        end
+    self.char eq ',': begin
+        self.nextc
+        return, self.TOKEN.T_COMMA
+    end
 
-        self.char eq '?': begin
-            self.nextc
-            return, self.TOKEN.T_QMARK
-        end
+    self.char eq ':': begin
+        self.nextc
+        return, self.TOKEN.T_COLON
+    end
 
-        self.char eq ',': begin
-            self.nextc
-            return, self.TOKEN.T_COMMA
-        end
+    self.char eq '~': begin
+        self.nextc
+        return, self.TOKEN.T_LNOT
+    end
 
-        self.char eq ':': begin
-            self.nextc
-            return, self.TOKEN.T_COLON
-        end
+    self.char eq '=': begin
+        self.nextc
+        return, self.TOKEN.T_ASSIGN
+    end
 
-        self.char eq '~': begin
-            self.nextc
-            return, self.TOKEN.T_LNOT
-        end
+    self.char eq '(': begin
+        self.nextc
+        return, self.TOKEN.T_LPAREN
+    end
 
-        self.char eq '=': begin
-            self.nextc
-            return, self.TOKEN.T_ASSIGN
-        end
+    self.char eq ')': begin
+        self.nextc
+        return, self.TOKEN.T_RPAREN
+    end
 
-        self.char eq '(': begin
-            self.nextc
-            return, self.TOKEN.T_LPAREN
-        end
+    self.char eq '[': begin
+        self.nextc
+        return, self.TOKEN.T_LBRACKET
+    end
 
-        self.char eq ')': begin
-            self.nextc
-            return, self.TOKEN.T_RPAREN
-        end
+    self.char eq ']': begin
+        self.nextc
+        return, self.TOKEN.T_RBRACKET
+    end
 
-        self.char eq '[': begin
-            self.nextc
-            return, self.TOKEN.T_LBRACKET
-        end
+    self.char eq '{': begin
+        self.nextc
+        return, self.TOKEN.T_LCURLY
+    end
 
-        self.char eq ']': begin
-            self.nextc
-            return, self.TOKEN.T_RBRACKET
-        end
+    self.char eq '}': begin
+        self.nextc
+        return, self.TOKEN.T_RCURLY
+    end
 
-        self.char eq '{': begin
-            self.nextc
-            return, self.TOKEN.T_LCURLY
-        end
+    self.char eq '|': begin
+        self.matchc, '|'
+        self.nextc
+        return, self.TOKEN.T_LOR
+    end
 
-        self.char eq '}': begin
-            self.nextc
-            return, self.TOKEN.T_RCURLY
-        end
+    self.char eq '&': begin
+        self.matchc, '&'
+        self.nextc
+        return, self.TOKEN.T_LAND
+    end
 
-        self.char eq '|': begin
-            self.matchc, '|'
-            self.nextc
-            return, self.TOKEN.T_LOR
-        end
+    ; If a dot is followed by a number, it is a decimal.
+    ; Otherwise it is a dot operator
+    self.char eq '.': begin
+        self.nextc
+        if isDigit(self.char) then begin
+            return, self.processFraction()
+        endif else begin
+            return, self.TOKEN.T_DOT
+        endelse
+    end
 
-        self.char eq '&': begin
-            self.matchc, '&'
-            self.nextc
-            return, self.TOKEN.T_LAND
-        end
+    isDigit(self.char): begin
+        self.nextc
+        while 1 do begin
+            case 1 of
 
-        ; If a dot is followed by a number, it is a decimal. 
-        ; Otherwise it is a dot operator
-        self.char eq '.': begin
-            self.nextc
-            if isDigit(self.char) then begin
-                return, self.processFraction() 
-            endif else begin
-                return, self.TOKEN.T_DOT
-            endelse
-        end
-
-        isDigit(self.char): begin
-            self.nextc
-            while 1 do begin
-                case 1 of
-
-                    self.char eq 'B': begin
-                        self.nextc
-                        return, self.TOKEN.T_BYTE
-                    end
-
-                    self.char eq 'S': begin
-                        self.nextc
-                        return, self.TOKEN.T_INT
-                    end
-
-                    self.char eq 'U': begin
-                        self.nextc
-                        if self.char eq 'L' then begin
-                            self.nextc
-                            if self.char eq 'L' then begin
-                                self.nextc
-                                return, self.TOKEN.T_ULONG64
-                            endif else begin
-                                return, self.TOKEN.T_ULONG
-                            endelse
-                        endif else if self.char eq 'S' then begin
-                            self.nextc
-                            return, self.TOKEN.T_UINT
-                        endif else begin
-                            return, self.TOKEN.T_UINT
-                        endelse
-                    end
-
-                    self.char eq 'L': begin
-                        self.nextc
-                        if self.char eq 'L' then begin
-                            self.nextc
-                            return, self.TOKEN.T_LONG64
-                        endif else begin
-                            return, self.TOKEN.T_LONG
-                        endelse
-                    end
-
-                    self.char eq '.': begin
-                        self.nextc
-                        return, self.processFraction()
-                    end
-
-                    self.char eq 'E': begin
-                        self.nextc
-                        return, self.processScientificNotation('E')
-                    end
-
-                    self.char eq 'D': begin
-                        self.nextc
-                        return, self.processScientificNotation('D')
-                    end
-
-                    isDigit(self.char): self.nextc  ; multi-digits number
-
-                    else: begin
-                        return, self.TOKEN.T_INT
-                    end
-
-                endcase ; end case char
-            endwhile  ; end while not whitespaces
-        end  ; end of isDigit
-
-        self.char eq '"' || self.char eq '''': begin
-            quote = self.char
-            self.nextc
-            while 1 do begin
-                if self.char eq quote then begin
+                self.char eq 'B': begin
                     self.nextc
-                    if self.char eq quote then begin ; escaped quote
+                    return, self.TOKEN.T_BYTE
+                end
+
+                self.char eq 'S': begin
+                    self.nextc
+                    return, self.TOKEN.T_INT
+                end
+
+                self.char eq 'U': begin
+                    self.nextc
+                    if self.char eq 'L' then begin
                         self.nextc
+                        if self.char eq 'L' then begin
+                            self.nextc
+                            return, self.TOKEN.T_ULONG64
+                        endif else begin
+                            return, self.TOKEN.T_ULONG
+                        endelse
+                    endif else if self.char eq 'S' then begin
+                        self.nextc
+                        return, self.TOKEN.T_UINT
                     endif else begin
-                        return, self.TOKEN.T_STRING
+                        return, self.TOKEN.T_UINT
                     endelse
-                endif else begin
-                    self.nextc
-                endelse
-            endwhile
-        end
+                end
 
-        ; identifier, keywords and pecial synatical sugars
-        isAlpha(self.char) || self.char eq '_': begin
+                self.char eq 'L': begin
+                    self.nextc
+                    if self.char eq 'L' then begin
+                        self.nextc
+                        return, self.TOKEN.T_LONG64
+                    endif else begin
+                        return, self.TOKEN.T_LONG
+                    endelse
+                end
+
+                self.char eq '.': begin
+                    self.nextc
+                    return, self.processFraction()
+                end
+
+                self.char eq 'E': begin
+                    self.nextc
+                    return, self.processScientificNotation('E')
+                end
+
+                self.char eq 'D': begin
+                    self.nextc
+                    return, self.processScientificNotation('D')
+                end
+
+                isDigit(self.char): self.nextc  ; multi-digits number
+
+                else: begin
+                    return, self.TOKEN.T_INT
+                end
+
+            endcase ; end case char
+        endwhile  ; end while not whitespaces
+    end  ; end of isDigit
+
+    self.char eq '"' || self.char eq '''': begin
+        quote = self.char
+        self.nextc
+        while 1 do begin
+            if self.char eq quote then begin
+                self.nextc
+                if self.char eq quote then begin ; escaped quote
+                    self.nextc
+                endif else begin
+                    return, self.TOKEN.T_STRING
+                endelse
+            endif else begin
+                self.nextc
+            endelse
+        endwhile
+    end
+
+    ; identifier, keywords and pecial synatical sugars
+    isAlpha(self.char) || self.char eq '_': begin
+        while 1 do begin
+            self.nextc
+            if ~(isAlnum(self.char) || self.char eq '_') then begin
+                ; Special Hash literal
+                if strupcase(self.getLexeme()) eq 'H' && self.char eq '{' then begin
+                    self.nextc
+                    return, self.TOKEN.T_HASH_LCURLY
+                endif else begin
+                    token = self.keywordLookup()
+                    if token ne -1 then begin
+                        return, token  ; keyword
+                    endif else begin
+                        return, self.TOKEN.T_IDENT
+                    endelse
+                endelse
+            endif
+        endwhile
+    end
+
+    ; system variable
+    self.char eq '!': begin
+        self.nextc
+        if isAlpha(self.char) then begin
             while 1 do begin
                 self.nextc
                 if ~(isAlnum(self.char) || self.char eq '_') then begin
-                    ; Special Hash literal
-                    if strupcase(self.getLexeme()) eq 'H' && self.char eq '{' then begin
-                        self.nextc
-                        return, self.TOKEN.T_HASH_LCURLY
-                    endif else begin
-                        token = self.keywordLookup()
-                        if token ne -1 then begin
-                            return, token  ; keyword
-                        endif else begin
-                            return, self.TOKEN.T_IDENT
-                        endelse
-                    endelse
-                endif 
+                    if self.getLexeme() eq '!NULL' then return, self.TOKEN.T_NULL else return, self.TOKEN.T_SYSV
+                endif
             endwhile
-        end
+        endif else begin
+            self.error, 'Bad character: A letter expected.'
+        endelse
 
-        ; system variable
-        self.char eq '!': begin
-            self.nextc
-            if isAlpha(self.char) then begin
-                while 1 do begin
-                    self.nextc
-                    if ~(isAlnum(self.char) || self.char eq '_') then begin
-                        if self.getLexeme() eq '!NULL' then return, self.TOKEN.T_NULL else return, self.TOKEN.T_SYSV
-                    endif
-                endwhile
-            endif else begin
-                self.error, 'letter expected'
-            endelse
+    end
 
-        end
-
-        else: self.error, "Bad character"
+    else: self.error, "Bad character"
 
 
-    endcase
+endcase
 end
 
 function MidleLexer::lex, lines
@@ -400,14 +408,14 @@ function MidleLexer::lex, lines
         s = self.getLexeme()
         ret.add, [t, s]
     endrep until token eq self.TOKEN.T_EOF
-    
+
     return, ret
 end
 
 
 pro MidleLexer::feed, lines
     self.lines.remove, /all
-    
+
     self.lines.add, lines, /extract
     self.buffer = (self.lines)[0]
     self.buflen = strlen(self.buffer)
@@ -417,12 +425,19 @@ pro MidleLexer::feed, lines
 end
 
 
-pro MidleLexer::getProperty, lineno=lineno, lookahead_pos=lookahead_pos, char=char, start_pos=start_pos, TOKEN=TOKEN
+function MidleLexer::getLine, idx
+    return, self.lines[idx]
+end
+
+
+pro MidleLexer::getProperty, lineno=lineno, lookahead_pos=lookahead_pos, char=char, $
+    start_pos=start_pos, TOKEN=TOKEN, buffer=buffer
     lineno = self.lineno
     lookahead_pos = self.lookahead_pos
     char = self.char
     start_pos = self.start_pos
     if arg_present(TOKEN) then TOKEN = self.TOKEN
+    if arg_present(buffer) then buffer = self.buffer
 end
 
 
@@ -432,7 +447,7 @@ end
 
 function MidleLexer::init, lines
     self.lines = list()
-    
+
     if n_elements(lines) ne 0 then begin
         self.lines.add, lines, /extract
         self.buffer = (self.lines)[0]
@@ -444,7 +459,7 @@ function MidleLexer::init, lines
 
     self.TOKEN = getTokenCodes()
 
-    self.keywords = Hash()
+    self.keywords = hash()
     self.keywords['MOD'] = self.TOKEN.T_MOD
     self.keywords['NOT'] = self.TOKEN.T_BNOT
     self.keywords['AND'] = self.TOKEN.T_BAND

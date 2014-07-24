@@ -182,6 +182,51 @@ pairs of parenthesis (as expected in other modern languages):
 print, midle('list(indgen(10)[0:*:2][2:4], /extract).count()')
 ```
 
+The `ast` output keyword can be used to obtain the Abstract Syntax Tree object
+of the given statements/expressions.
+```IDL
+print, midle('-2.2 - 2 mod 42. + 22 ^ 2 > 3 - 4.2 * 2.2 / 2.4', ast=ast)
+```
+
+You can print the `ast` object (`print, ast`) to get a hierarchical view of the
+syntax tree.
+```
+STMTLIST
+  +-- BINOP 'T_SUB'
+        +-- BINOP 'T_MAX'
+              +-- BINOP 'T_ADD'
+                    +-- BINOP 'T_SUB'
+                          +-- UNARYOP 'T_SUB'
+                                +-- NUMBER '2.2'
+                          +-- BINOP 'T_MOD'
+                                +-- NUMBER '2'
+                                +-- NUMBER '42.'
+                    +-- BINOP 'T_EXP'
+                          +-- NUMBER '22'
+                          +-- NUMBER '2'
+              +-- NUMBER '3'
+        +-- BINOP 'T_DIV'
+              +-- BINOP 'T_MUL'
+                    +-- NUMBER '4.2'
+                    +-- NUMBER '2.2'
+              +-- NUMBER '2.4'
+```
+
+You can also evaluate the `ast` object to get the result of the
+statement/expression again.
+```IDL
+print, ast.eval()
+```
+
+The `error` output keyword is used to check whether the call to MIDLE is
+successful. It will be `!NULL` if the call succeeds. Or it will be a string
+containing the error message.
+```IDL
+print, midle('42 + a', error=error)
+```
+The content of `error` is now `MIDLE_RUNTIME_ERR - Undefined variable: a`.
+
+
 ## <a name="missing-features"></a>Missing Features
 The missing features fall into two categories. The first category is *By Design*
 that means they are deliberately left out to narrow the scope of MIDLE so it can

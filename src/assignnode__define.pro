@@ -52,7 +52,7 @@ function AssignNode::eval, env
             
             if ~isa(host, 'IdentNode') then self.error, 'Invalid LHS variable for assignment'
             hostName = host.eval(env, /lexeme)
-            if ~env.haskey(hostName) then self.error, 'Variable ' + hostName + ' does not exist'
+            if ~env.haskey(hostName) then self.error, 'Undefined variable: ' + hostName
 
             ; Hash and List are references and can be retrieved safely without creating
             ; new copies

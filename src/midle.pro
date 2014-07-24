@@ -1,5 +1,5 @@
 
-function midle, _lines_or_file, _env, file=file, ast=ast
+function midle, _lines_or_file, _env, file=file, ast=ast, error=error
     compile_opt logical_predicate
     
     if keyword_set(file) then lines = midleRead(_lines_or_file) else lines = _lines_or_file
@@ -16,7 +16,19 @@ function midle, _lines_or_file, _env, file=file, ast=ast
     endif else begin
         message, 'Runtime environment must be either a Hash or Struct'
     endelse
-
+    
+    error = !NULL
+    catch, theError
+    if theError ne 0 then begin
+        catch, /cancel
+        if !error_state.name eq 'IDL_M_USER_ERR' && strmid(!error_state.msg,0,6) eq 'MIDLE_' then begin
+            error = !error_state.msg
+            return, !NULL
+        endif else begin
+            message, /reissue_last
+        endelse
+        
+    endif
     ast = parse(lines)
     res = ast.eval(env)
 
@@ -27,8 +39,8 @@ function midle, _lines_or_file, _env, file=file, ast=ast
 end
 
 
-pro midle, _lines_or_file, _env, file=file, ast=ast
+pro midle, _lines_or_file, _env, file=file, ast=ast, error=error
     
-    !NULL = midle(_lines_or_file, _env, file=file, ast=ast)
+    !NULL = midle(_lines_or_file, _env, file=file, ast=ast, error=error)
     
 end

@@ -27,7 +27,7 @@ function BinOpNode::eval, env
         TOKEN.T_GT: val = val1 gt val2
         TOKEN.T_LE: val = val1 le val2
         TOKEN.T_LT: val = val1 lt val2
-        else: self.error, 'Unrecognized operator ' + self.operator
+        else: self.error, 'Unrecognized operator'
     endcase
     return, val
 end

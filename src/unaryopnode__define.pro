@@ -9,7 +9,7 @@ function UnaryOpNode::eval, env
         TOKEN.T_SUB: val = -val
         TOKEN.T_LNOT: val = ~val
         TOKEN.T_BNOT: val = not val
-        else: self.error, 'Unrecognized operator ' + self.operator
+        else: self.error, 'Unrecognized operator'
     endcase
     return, val
 end
