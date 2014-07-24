@@ -1,3 +1,12 @@
+; docformat = 'rst'
+
+;+
+; Unit tests for MIDLE.
+; 
+; :Author:
+; 	Yang Wang (ywangd@gmail.com)
+;-
+
 
 function array_equal_exact, a1, a2
     return, array_equal(a1, a2) and (array_equal(size(a1), size(a2))) 
@@ -192,6 +201,27 @@ function Midle_ut::test_arith
         midle('([2.2, 4.2, 42] + [4.2, 22, .42]) * [0.22, 22.22, 4.222]'), $
         ([2.2, 4.2, 42] + [4.2, 22, .42]) * [0.22, 22.22, 4.222]), $
         'Arith operators on vectors with parenthesis'
+
+    return, 1
+end
+
+function Midle_ut::test_more_operators
+
+    assert, midle('1 && 1') eq (1 && 1)
+    assert, midle('1 && 0') eq (1 && 0)
+    assert, midle('42 || 1') eq (42 || 1)
+    assert, midle('0 || 42') eq (0 || 42)
+    assert, midle('~42') eq ~42
+    assert, midle('~0') eq ~0
+    
+    assert, midle('1 and 0') eq (1 and 0)
+    assert, midle('5 and 7') eq (5 and 7)
+    assert, midle('5 or 7') eq (5 or 7)
+    assert, midle('not (42 and 22) or (22 and 0)') eq (not (42 and 22) or (22 and 0))
+    
+    assert, midle('42 eq 42') eq (42 eq 42)
+    assert, midle('42 gt 22') eq (42 gt 22)
+    assert, midle('22 lt 42') eq (22 lt 42)
 
     return, 1
 end

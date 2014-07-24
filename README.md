@@ -131,7 +131,8 @@ midle, 'plot, indgen(50, start=100), /ynozero'
 
 
 Almost all arithmetic, logical, bitwise, relational, matrix, ternary operators
-are supported. The exceptions are compound operators such as `++`, `+=`.
+are supported. The exceptions are compound operators such as `++`, `+=` and
+pointer de-reference `*pointer`.
 ```IDL
 print, midle('-2.2 - 2 mod ((42. + 22) ^ 2 > 3 - 4.2) * 2.2 / 2.4')
 
@@ -245,7 +246,7 @@ are ways to add them).
 - Only anonymous structure is supported. This means no named structure, no
   inheritance.
 - Compound operators are not supported, i.e. `++`, `--`, `+=`, `-=`, etc.
-- Pointer and pointer de-reference are not supported, i.e. `*pointer`
+- Pointer de-reference is not supported, i.e. `*pointer`
 - The `->` operator is not supported as most times it can be replaced by `.`
 - Creation and assignment of system variables are not supported
 - Parenthesis over assignment statement are not supported, i.e. `x = (y = 42)`

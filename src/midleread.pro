@@ -71,7 +71,7 @@ function midleRead, _filename
         ; insert the lines of the included file into proper position
         ; of the final lines array.
         if thisIdx gt 0 then h = lines[0:thisIdx-1] else h = []
-        t = lines[thisIdx+1:*]
+        if thisIdx lt n_elements(lines) - 1 then t = lines[thisIdx+1:*] else t = []
         lines = [h, incLines, t]
         ; We need to offset the subsequent index for the number of lines inserted
         ; and the one line removed
