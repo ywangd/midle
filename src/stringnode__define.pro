@@ -1,3 +1,9 @@
+; docformat = 'rst'
+
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function StringNode::eval, env
     val = strmid(self.lexeme, 1, strlen(self.lexeme)-2)

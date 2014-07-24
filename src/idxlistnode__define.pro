@@ -1,4 +1,9 @@
+; docformat = 'rst'
 
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function IdxlistNode::eval, env, shp, fromIndex=fromIndex, toIndex=toIndex, isRanges=isRanges
     

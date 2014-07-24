@@ -1,3 +1,9 @@
+; docformat = 'rst'
+
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function MemberNode::eval_lhs, env, member=member
     host = self.operands[0]

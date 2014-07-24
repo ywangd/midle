@@ -1,4 +1,9 @@
+; docformat = 'rst'
 
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function SysvarNode::eval, env
     case strupcase(self.lexeme) of

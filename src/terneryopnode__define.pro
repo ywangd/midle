@@ -1,5 +1,9 @@
+; docformat = 'rst'
 
-
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function TerneryOpNode::eval, env
     predicate = self.operands[0].eval(env)

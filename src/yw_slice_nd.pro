@@ -3,19 +3,24 @@
 ;+
 ; The purpose of this routine is to return the indices of arbitrary slices on
 ; arbitrary dimension of an array.
-;   The routine is modified from JD Smith'shape slice_nd. The feature of this 
+; 
+;   The routine is modified from JD Smith's slice_nd. The feature of this 
 ; routine is that the slice is not limited to be a single slice. Multiple 
 ; slices can be retrieved if a vector is passed in the position of the `slice`
 ; parameter.
+; 
 ;   NOTE there are several differences from slice_nd:
+;   
 ; 1. The dim parameter starts from 1 for the first dimension
+; 
 ; 2. The dimension definition is passed as the first parameter instead of the 
 ;    actual array. The dimension definition is a vector, with each element 
 ;    represents the size of corresponding dimension.
+;    
 ; 3. The Return value is the slice indices instead of the actual sliced array.
 ;
 ; :Author:
-;   ywangd@gmail.com
+;   Yang Wang (ywangd@gmail.com)
 ;
 ; :Returns:
 ;   The indices of the slices.

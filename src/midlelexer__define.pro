@@ -1,4 +1,11 @@
+; docformat = 'rst'
 
+;+
+; The lexer of MIDLE.
+; 
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function isWhite, c
     b = byte(c)

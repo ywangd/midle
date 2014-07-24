@@ -1,3 +1,11 @@
+; docformat = 'rst'
+
+;+
+; The token codes used by MIDLE.
+; 
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function getTokenCodes
 

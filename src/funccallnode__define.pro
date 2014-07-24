@@ -1,4 +1,9 @@
+; docformat = 'rst'
 
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function FuncCallNode::eval, env
     compile_opt logical_predicate

@@ -1,4 +1,9 @@
+; docformat = 'rst'
 
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function ArrayLiteralNode::eval, env
     compile_opt logical_predicate

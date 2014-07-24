@@ -1,3 +1,9 @@
+; docformat = 'rst'
+
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function IndexNode::eval, env, shp, idxdim, onlyIndex=onlyIndex, isRange=isRange
     compile_opt logical_predicate

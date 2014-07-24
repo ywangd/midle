@@ -1,4 +1,9 @@
+; docformat = 'rst'
 
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function NumberNode::eval, env
     ; Byte is special as Fix to byte produces the ascii codes of letters in the string

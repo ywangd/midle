@@ -1,3 +1,12 @@
+; docformat = 'rst'
+
+;+
+; Represent the !NULL value. Note the !NULL value can take different
+; literal forms, such as [], {} and !NULL.
+; 
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function NullNode::eval, env
     return, !NULL

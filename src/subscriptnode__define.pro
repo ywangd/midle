@@ -1,3 +1,9 @@
+; docformat = 'rst'
+
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function SubscriptNode::eval_lhs, env, subs=subs, idxlist=idxlist
     host = self.operands[0]

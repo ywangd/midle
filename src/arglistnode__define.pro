@@ -1,3 +1,9 @@
+; docformat = 'rst'
+
+;+
+; :Author:
+; 	Yang Wang (ywangd@gmail.com)
+;-
 
 function ArglistNode::eval, env, keyargs=keyargs
     

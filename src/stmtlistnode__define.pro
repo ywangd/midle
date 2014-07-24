@@ -1,4 +1,11 @@
+; docformat = 'rst'
 
+;+
+; The statment list node is the top level node of the syntax tree.
+;  
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function StmtListNode::eval, env
     ret = !NULL

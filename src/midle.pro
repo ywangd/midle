@@ -1,4 +1,35 @@
+; docformat = 'rst'
 
+;+
+; Mini IDL Evaluator (MIDLE) in many cases provides an alternative to IDL's
+; EXECUTE command. 
+;
+; :Author:
+; 	Yang Wang (ywangd@gmail.com)
+;-
+
+;+
+; :Description:
+;    The functional interface of MIDLE.
+;
+; :Params:
+;    _lines_or_file : in, required, type=String
+;       Lines of IDL statements or file containing IDL statements.
+;    _env : in, optional, type=Object
+;       The runtime environment for variable lookup. It is either a hash like
+;       object or a structure.
+;
+; :Keywords:
+;    file : in, optional, type=boolean
+;       If this keyword is set, the first positional parameter is treated as
+;       a filename. Otherwise it is treated as strings of IDL codes.
+;    ast : out, optional, type=Object
+;       The abstract syntax tree object of the input code.
+;    error : out, optional, type=String
+;       Containing error message if there is error during evaluation. Equals
+;       to !NULL if no error.
+;
+;-
 function midle, _lines_or_file, _env, file=file, ast=ast, error=error
     compile_opt logical_predicate
     
@@ -38,7 +69,10 @@ function midle, _lines_or_file, _env, file=file, ast=ast, error=error
 
 end
 
-
+;+
+; :Description:
+;    The procedurecal interface of MIDLE.
+;-
 pro midle, _lines_or_file, _env, file=file, ast=ast, error=error
     
     !NULL = midle(_lines_or_file, _env, file=file, ast=ast, error=error)

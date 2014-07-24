@@ -1,15 +1,18 @@
 ; docformat = 'rst'
 
 ;+
-; The purpose of this routine is to concatenate two arrays along the given
-; dimension. The idea is to reform the input arrays to 3-D arrays with the
-; 2nd dimension being the dimension to be concatecated and concatenate on it.
+; The purpose of this routine is to concatenate two arrays along any given
+; dimension. 
+; 
+; The idea is to reform the input arrays to 3-D arrays with the 2nd dimension 
+; being the dimension to be concatecated and concatenate on the dimension.
+; 
 ; The results are reformed back to the desired shape after concatenation.
 ;   The advantage is that the function is not limited by the number of brackets
 ; while performing concatenation (IDL allows up to 3 levels of brackets).
 ;
 ; :Author:
-;   ywangd@gmail.com
+;   Yang Wang (ywangd@gmail.com)
 ;
 ; :Keywords:
 ;   dimension : in, optional, type=int, default=1

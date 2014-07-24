@@ -1,3 +1,9 @@
+; docformat = 'rst'
+
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function KeyargNode::eval, env
     name = self.operands[0]

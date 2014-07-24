@@ -1,3 +1,11 @@
+; docformat = 'rst'
+
+;+
+; The parser of MIDLE.
+; 
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function MidleParser::parse_argument
     ; argument : ternary_expr ['=' ternary_expr] | '/' IDENT

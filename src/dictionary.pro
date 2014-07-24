@@ -1,7 +1,14 @@
+; docformat = 'rst'
+
+;+
 ; A custom implementation of Dictionary of IDL 8.3, so that some programs
-; can run with 8.2
-; Keys must be valid IDL variable names
-; Case insensitive
+; can run with IDL 8.0 to 8.2. 
+; 
+; Keys must be valid IDL variable names and are case insensitive.
+; 
+; :Author:
+; 	Yang Wang (ywangd@gmail.com)
+;-
 
 function Dictionary::haskey, theKey
     return, self->Hash::haskey(strlowcase(theKey))

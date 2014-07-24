@@ -252,7 +252,7 @@ function Midle_ut::test_assignment
 end
 
 function Midle_ut::test_file
-    midle, filepath('input01', root=cgsourcedir()), env, /file
+    midle, filepath('input01', root=mg_src_root()), env, /file
     assert, array_equal_exact(env.a, indgen(3,4,5))
     assert, array_equal_exact((env.h)['z', 3], indgen(3,4,5)+42)
     assert, (env.h)['x'] eq 2.2
@@ -260,7 +260,7 @@ function Midle_ut::test_file
     assert, (env.h)['x'] + (env.h)['x'] eq (env.h)['xx']
     
     env = Dictionary()
-    midle, filepath('input02', root=cgsourcedir()), env, /file
+    midle, filepath('input02', root=mg_src_root()), env, /file
     assert, array_equal_exact(env.a, indgen(3,4,5)), 'include'
     assert, array_equal_exact((env.h)['z', 3], indgen(3,4,5)+42)
     assert, (env.h)['x'] eq 42

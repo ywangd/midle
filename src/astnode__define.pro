@@ -1,3 +1,12 @@
+; docformat = 'rst'
+
+;+
+; The base class of abstract syntax tree Node. It provides basic housekeeping
+; functions such as error handling and print.
+; 
+; :Author:
+; 	Yang Wang (ywangd@gmail.com)
+;-
 
 pro AstNode::error, msg
     print

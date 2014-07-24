@@ -1,5 +1,9 @@
+; docformat = 'rst'
 
-
+;+
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function BinOpNode::eval, env
     TOKEN = self.lexer.TOKEN

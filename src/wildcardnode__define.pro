@@ -1,3 +1,11 @@
+; docformat = 'rst'
+
+;+
+; Wildcard in subscripts, e.g. a[*]
+; 
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;-
 
 function WildcardNode::print_helper
     return, string(self.name(), self.lexeme, format='(A, " ''",A,"''")')

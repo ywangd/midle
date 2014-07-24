@@ -1,4 +1,19 @@
-
+;+
+; :Description:
+;    Read the input file and recursively expand any file inclusion in place.
+;    File inclusion is denoted by a leading @ symbol, e.g. @included_file.
+;    
+; :Author:
+;   Yang Wang (ywangd@gmail.com)
+;
+; :Returns:
+;   A string array containing contents from the given file and any included file.
+;   
+; :Params:
+;    _filename : in, required, type=String
+;       The input file to read
+;
+;-
 function midleRead, _filename
 
     hits = file_search(_filename, count=count, /fully_qualify_path)
