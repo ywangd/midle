@@ -99,12 +99,12 @@ print, 'after input1'
 ```
 
 The file inclusion can be nested and MIDLE will recursively expand all file
-inclusions. The file to be included can be given in relative path as above or in
-full qualified path such as `/home/user/input1`. If file name or path contains
-whitespace, double or single quotes can be used as `"/home/user/input 1"`. Note
-that expansion of included files is done in a pre-process step and is not a
-function of the parser. This also means the `@` directive can only be used in
-file input.
+inclusions. The file to be included can be given as relative path as shown above
+or as a full qualified path such as `@/home/user/input1`. If file name or path
+contains whitespace, double or single quotes can be used as `@"/home/user/input
+1"`. Note that expansion of included files is done in a pre-process step and is
+not a function of the parser. This also means the `@` directive can only be used
+in file input.
 
 
 A second argument can be used to pass values to variables in the expression.
@@ -141,9 +141,10 @@ print, midle('x eq 42 ? indgen(5, start=x) : indgen(5)', env)
 ```
 
 Assignments are supported. Note that all variable creation and modification is
-done against the `env` variable, not to the scope where MIDLE is called. 
+done against the `env` variable, not to the scope where MIDLE is called (unlike
+`EXECUTE`). 
 For an example, the following code creates a variable `x` in the `env` variable,
-if the `env` variable itself is not defined, it will be created by the code.
+if the `env` variable itself is not defined, it will be created by MIDLE.
 ```IDL
 print, midle('x = 42', env)
 print, env.x  ; output 42
@@ -159,9 +160,9 @@ List literal is written by list the items inside a pair of parenthesis:
 print, midle('("this", "is", "a", "list", "literal", 42)')
 ```
 
-Hash literal is written in a way similar to IDL structure, but prefixing a `h`
-before the left curly bracket. In addition, the keys must be either string or
-number.
+Hash literal is written in a way similar to IDL structure, but prefixing a
+letter `h` before the left curly bracket. In addition, the keys must be either
+string or number.
 ```IDL
 print, midle('h{"x": 42, "y": 22, "description": "This is a hash literal"}')
 ```
@@ -214,8 +215,7 @@ STMTLIST
               +-- NUMBER '2.4'
 ```
 
-You can also evaluate the `ast` object to get the result of the
-statement/expression again.
+You can also evaluate the `ast` object to get the result again.
 ```IDL
 print, ast.eval()
 ```
@@ -230,18 +230,18 @@ The content of `error` is now `MIDLE_RUNTIME_ERR - Undefined variable: a`.
 
 
 ## <a name="missing-features"></a>Missing Features
-The missing features fall into two categories. The first category is *By Design*
-that means they are deliberately left out to narrow the scope of MIDLE so it can
-focus on more important tasks. The second category is a result of IDL's own
-limitations and cannot be technically circumvented (please let me know if there
-are ways to add them). 
+The missing features fall into two broad categories. The first category is *By
+Design* that means they are deliberately left out to narrow the scope of MIDLE
+so it can focus on more important tasks. The second category is a result of
+IDL's own limitations and cannot be technically circumvented (please let me
+know if there are ways to add them). 
 
 ### By Design
 - Program control constructs are not supported. This means no support for
   `IF...THEN...ELSE`, `CASE`, `SWITCH`, `WHILE`, `REPEAT`, `FOR`, `FOREACH`,
   `GOTO`, etc.
 - No support for routine definitions, i.e. `PRO`, `FUNCTION` (`EXECUTE` does not
-  Support them either).
+  support them either).
 - Hex and Oct literals are not supported
 - Only anonymous structure is supported. This means no named structure, no
   inheritance.
@@ -257,8 +257,8 @@ are ways to add them).
 - Object property access using dot notation, i.e. `object.property` are not
   supported
     * The dot notation can be used with Hash like object to get the value by
-      using the property's name as a key to the Hash, i.e. `someHash.x` is equal
-      to `someHash['x']`
+      using the property's name as the key, i.e. `someHash.x` is equal to
+      `someHash['x']`
 - Up to nine positional arguments and unlimited input keyword arguments are
   supported
 - Cannot obtain values for user defined system variables (built-in system
@@ -297,7 +297,7 @@ called `arrayconcat`, which can also be used as standalone program.
 
 ### Better chaining for function/method calls and subscripts
 Parenthesis are often required in IDL if you want to chain a few calls and
-subscripts. For an example, say we have a hash `h` as `hash('x',3,
+subscripts. For an example, say we have a hash variable `h` as `hash('x',3,
 'y',5,'z',3)`, the expression `h.where(3)[0]` is illegal in IDL. To chain the
 method call and subscript, an extra pair of parenthesis has to be used like
 `(h.where(3))[0]`. Now let's try `h.where(3).count()`. Apparently it is illegal
@@ -320,12 +320,13 @@ associativity.
 ## Documentation
 [IDLdoc](https://github.com/mgalloy/idldoc) is used for code level documentation
 (not much yet). The documentation can be generated by running `midledoc` in the
-docs folder (`mg_src_root` from [mglib](https://github.com/mgalloy/mglib) is
+`docs` folder (`mg_src_root` from [mglib](https://github.com/mgalloy/mglib) is
 required).
 
 ## Testing
 [mgunit](https://github.com/mgalloy/mgunit) is used for testing. Add the `test`
-folder in your IDL path and run `mgunit, 'midle_ut'`.
+folder in your IDL path and run `mgunit, 'midle_ut'` (`mg_src_root` is required
+as well). The unit test file has some more example ussages of MIDLE.
 
 
 ## Known issues

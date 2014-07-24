@@ -200,7 +200,7 @@ end
 
 
 function MidleParser::parse_atom
-    ; atom : (...) | [...] | {...} | IDENT | NUMBER | STRING | !NULL | SYSVAR
+    ; atom : (...) | [...] | {...} | h{...} | IDENT | NUMBER | STRING | !NULL | SYSVAR
     if self.tag eq self.TOKEN.T_LPAREN then begin
         self.matchToken, self.tag
         if self.tag ne self.TOKEN.T_RPAREN then begin

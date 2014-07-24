@@ -2,7 +2,7 @@
 
 ;+
 ; The lexer of MIDLE.
-; 
+;
 ; :Author:
 ;   Yang Wang (ywangd@gmail.com)
 ;-
@@ -35,8 +35,8 @@ pro MidleLexer::nextEOL
     while self.char ne string(10B) do self.nextc
 end
 
-; The continuation symbol requires requires any trailing characters and read
-; until a non-empty, non-comment, and non-$ line is found.
+; The continuation symbol ingores any trailing characters and read until a
+; non-empty, non-comment, and non-$ line is found.
 ; A $ line is a line starts with a $ symbol excluding preceeding whitespaces
 pro MidleLexer::nextContinuation
     repeat begin
@@ -147,263 +147,263 @@ function MidleLexer::getToken
     endif else if self.char eq '&' then begin
         self.char = string(10B)  ; & is effectively an EOL
     endif else if self.char eq ';' then begin
-    self.nextEOL
-endif
-
-self.start_pos = self.lookahead_pos - 1
-
-case 1 of
-
-    self.char eq '': return, self.TOKEN.T_EOF
-    self.char eq string(10B): begin
-        self.nextc
-        return, self.TOKEN.T_EOL
-    end
-
-    self.char eq '+': begin
-        self.nextc
-        return, self.TOKEN.T_ADD
-    end
-
-    self.char eq '-': begin
-        self.nextc
-        if self.char eq '>' then begin
+        self.nextEOL
+    endif
+    
+    self.start_pos = self.lookahead_pos - 1
+    
+    case 1 of
+    
+        self.char eq '': return, self.TOKEN.T_EOF
+        self.char eq string(10B): begin
             self.nextc
-            return, self.TOKEN.T_ARROW
-        endif else begin
-            return, self.TOKEN.T_SUB
-        endelse
-    end
-
-    self.char eq '*': begin
-        self.nextc
-        return, self.TOKEN.T_MUL
-    end
-
-    self.char eq '/': begin
-        self.nextc
-        return, self.TOKEN.T_DIV
-    end
-
-    self.char eq '^': begin
-        self.nextc
-        return, self.TOKEN.T_EXP
-    end
-
-    self.char eq '>': begin
-        self.nextc
-        return, self.TOKEN.T_MAX
-    end
-
-    self.char eq '<': begin
-        self.nextc
-        return, self.TOKEN.T_MIN
-    end
-
-    self.char eq '?': begin
-        self.nextc
-        return, self.TOKEN.T_QMARK
-    end
-
-    self.char eq ',': begin
-        self.nextc
-        return, self.TOKEN.T_COMMA
-    end
-
-    self.char eq ':': begin
-        self.nextc
-        return, self.TOKEN.T_COLON
-    end
-
-    self.char eq '~': begin
-        self.nextc
-        return, self.TOKEN.T_LNOT
-    end
-
-    self.char eq '=': begin
-        self.nextc
-        return, self.TOKEN.T_ASSIGN
-    end
-
-    self.char eq '(': begin
-        self.nextc
-        return, self.TOKEN.T_LPAREN
-    end
-
-    self.char eq ')': begin
-        self.nextc
-        return, self.TOKEN.T_RPAREN
-    end
-
-    self.char eq '[': begin
-        self.nextc
-        return, self.TOKEN.T_LBRACKET
-    end
-
-    self.char eq ']': begin
-        self.nextc
-        return, self.TOKEN.T_RBRACKET
-    end
-
-    self.char eq '{': begin
-        self.nextc
-        return, self.TOKEN.T_LCURLY
-    end
-
-    self.char eq '}': begin
-        self.nextc
-        return, self.TOKEN.T_RCURLY
-    end
-
-    self.char eq '|': begin
-        self.matchc, '|'
-        self.nextc
-        return, self.TOKEN.T_LOR
-    end
-
-    self.char eq '&': begin
-        self.matchc, '&'
-        self.nextc
-        return, self.TOKEN.T_LAND
-    end
-
-    ; If a dot is followed by a number, it is a decimal.
-    ; Otherwise it is a dot operator
-    self.char eq '.': begin
-        self.nextc
-        if isDigit(self.char) then begin
-            return, self.processFraction()
-        endif else begin
-            return, self.TOKEN.T_DOT
-        endelse
-    end
-
-    isDigit(self.char): begin
-        self.nextc
-        while 1 do begin
-            case 1 of
-
-                self.char eq 'B': begin
-                    self.nextc
-                    return, self.TOKEN.T_BYTE
-                end
-
-                self.char eq 'S': begin
-                    self.nextc
-                    return, self.TOKEN.T_INT
-                end
-
-                self.char eq 'U': begin
-                    self.nextc
-                    if self.char eq 'L' then begin
+            return, self.TOKEN.T_EOL
+        end
+    
+        self.char eq '+': begin
+            self.nextc
+            return, self.TOKEN.T_ADD
+        end
+    
+        self.char eq '-': begin
+            self.nextc
+            if self.char eq '>' then begin
+                self.nextc
+                return, self.TOKEN.T_ARROW
+            endif else begin
+                return, self.TOKEN.T_SUB
+            endelse
+        end
+    
+        self.char eq '*': begin
+            self.nextc
+            return, self.TOKEN.T_MUL
+        end
+    
+        self.char eq '/': begin
+            self.nextc
+            return, self.TOKEN.T_DIV
+        end
+    
+        self.char eq '^': begin
+            self.nextc
+            return, self.TOKEN.T_EXP
+        end
+    
+        self.char eq '>': begin
+            self.nextc
+            return, self.TOKEN.T_MAX
+        end
+    
+        self.char eq '<': begin
+            self.nextc
+            return, self.TOKEN.T_MIN
+        end
+    
+        self.char eq '?': begin
+            self.nextc
+            return, self.TOKEN.T_QMARK
+        end
+    
+        self.char eq ',': begin
+            self.nextc
+            return, self.TOKEN.T_COMMA
+        end
+    
+        self.char eq ':': begin
+            self.nextc
+            return, self.TOKEN.T_COLON
+        end
+    
+        self.char eq '~': begin
+            self.nextc
+            return, self.TOKEN.T_LNOT
+        end
+    
+        self.char eq '=': begin
+            self.nextc
+            return, self.TOKEN.T_ASSIGN
+        end
+    
+        self.char eq '(': begin
+            self.nextc
+            return, self.TOKEN.T_LPAREN
+        end
+    
+        self.char eq ')': begin
+            self.nextc
+            return, self.TOKEN.T_RPAREN
+        end
+    
+        self.char eq '[': begin
+            self.nextc
+            return, self.TOKEN.T_LBRACKET
+        end
+    
+        self.char eq ']': begin
+            self.nextc
+            return, self.TOKEN.T_RBRACKET
+        end
+    
+        self.char eq '{': begin
+            self.nextc
+            return, self.TOKEN.T_LCURLY
+        end
+    
+        self.char eq '}': begin
+            self.nextc
+            return, self.TOKEN.T_RCURLY
+        end
+    
+        self.char eq '|': begin
+            self.matchc, '|'
+            self.nextc
+            return, self.TOKEN.T_LOR
+        end
+    
+        self.char eq '&': begin
+            self.matchc, '&'
+            self.nextc
+            return, self.TOKEN.T_LAND
+        end
+    
+        ; If a dot is followed by a number, it is a decimal.
+        ; Otherwise it is a dot operator
+        self.char eq '.': begin
+            self.nextc
+            if isDigit(self.char) then begin
+                return, self.processFraction()
+            endif else begin
+                return, self.TOKEN.T_DOT
+            endelse
+        end
+    
+        isDigit(self.char): begin
+            self.nextc
+            while 1 do begin
+                case 1 of
+    
+                    self.char eq 'B': begin
+                        self.nextc
+                        return, self.TOKEN.T_BYTE
+                    end
+    
+                    self.char eq 'S': begin
+                        self.nextc
+                        return, self.TOKEN.T_INT
+                    end
+    
+                    self.char eq 'U': begin
                         self.nextc
                         if self.char eq 'L' then begin
                             self.nextc
-                            return, self.TOKEN.T_ULONG64
+                            if self.char eq 'L' then begin
+                                self.nextc
+                                return, self.TOKEN.T_ULONG64
+                            endif else begin
+                                return, self.TOKEN.T_ULONG
+                            endelse
+                        endif else if self.char eq 'S' then begin
+                            self.nextc
+                            return, self.TOKEN.T_UINT
                         endif else begin
-                            return, self.TOKEN.T_ULONG
+                            return, self.TOKEN.T_UINT
                         endelse
-                    endif else if self.char eq 'S' then begin
+                    end
+    
+                    self.char eq 'L': begin
                         self.nextc
-                        return, self.TOKEN.T_UINT
-                    endif else begin
-                        return, self.TOKEN.T_UINT
-                    endelse
-                end
-
-                self.char eq 'L': begin
-                    self.nextc
-                    if self.char eq 'L' then begin
+                        if self.char eq 'L' then begin
+                            self.nextc
+                            return, self.TOKEN.T_LONG64
+                        endif else begin
+                            return, self.TOKEN.T_LONG
+                        endelse
+                    end
+    
+                    self.char eq '.': begin
                         self.nextc
-                        return, self.TOKEN.T_LONG64
-                    endif else begin
-                        return, self.TOKEN.T_LONG
-                    endelse
-                end
-
-                self.char eq '.': begin
-                    self.nextc
-                    return, self.processFraction()
-                end
-
-                self.char eq 'E': begin
-                    self.nextc
-                    return, self.processScientificNotation('E')
-                end
-
-                self.char eq 'D': begin
-                    self.nextc
-                    return, self.processScientificNotation('D')
-                end
-
-                isDigit(self.char): self.nextc  ; multi-digits number
-
-                else: begin
-                    return, self.TOKEN.T_INT
-                end
-
-            endcase ; end case char
-        endwhile  ; end while not whitespaces
-    end  ; end of isDigit
-
-    self.char eq '"' || self.char eq '''': begin
-        quote = self.char
-        self.nextc
-        while 1 do begin
-            if self.char eq quote then begin
-                self.nextc
-                if self.char eq quote then begin ; escaped quote
-                    self.nextc
-                endif else begin
-                    return, self.TOKEN.T_STRING
-                endelse
-            endif else begin
-                self.nextc
-            endelse
-        endwhile
-    end
-
-    ; identifier, keywords and pecial synatical sugars
-    isAlpha(self.char) || self.char eq '_': begin
-        while 1 do begin
+                        return, self.processFraction()
+                    end
+    
+                    self.char eq 'E': begin
+                        self.nextc
+                        return, self.processScientificNotation('E')
+                    end
+    
+                    self.char eq 'D': begin
+                        self.nextc
+                        return, self.processScientificNotation('D')
+                    end
+    
+                    isDigit(self.char): self.nextc  ; multi-digits number
+    
+                    else: begin
+                        return, self.TOKEN.T_INT
+                    end
+    
+                endcase ; end case char
+            endwhile  ; end while not whitespaces
+        end  ; end of isDigit
+    
+        self.char eq '"' || self.char eq '''': begin
+            quote = self.char
             self.nextc
-            if ~(isAlnum(self.char) || self.char eq '_') then begin
-                ; Special Hash literal
-                if strupcase(self.getLexeme()) eq 'H' && self.char eq '{' then begin
+            while 1 do begin
+                if self.char eq quote then begin
                     self.nextc
-                    return, self.TOKEN.T_HASH_LCURLY
-                endif else begin
-                    token = self.keywordLookup()
-                    if token ne -1 then begin
-                        return, token  ; keyword
+                    if self.char eq quote then begin ; escaped quote
+                        self.nextc
                     endif else begin
-                        return, self.TOKEN.T_IDENT
+                        return, self.TOKEN.T_STRING
                     endelse
+                endif else begin
+                    self.nextc
                 endelse
-            endif
-        endwhile
-    end
-
-    ; system variable
-    self.char eq '!': begin
-        self.nextc
-        if isAlpha(self.char) then begin
+            endwhile
+        end
+    
+        ; identifier, keywords and pecial synatical sugars
+        isAlpha(self.char) || self.char eq '_': begin
             while 1 do begin
                 self.nextc
                 if ~(isAlnum(self.char) || self.char eq '_') then begin
-                    if self.getLexeme() eq '!NULL' then return, self.TOKEN.T_NULL else return, self.TOKEN.T_SYSV
+                    ; Special Hash literal
+                    if strupcase(self.getLexeme()) eq 'H' && self.char eq '{' then begin
+                        self.nextc
+                        return, self.TOKEN.T_HASH_LCURLY
+                    endif else begin
+                        token = self.keywordLookup()
+                        if token ne -1 then begin
+                            return, token  ; keyword
+                        endif else begin
+                            return, self.TOKEN.T_IDENT
+                        endelse
+                    endelse
                 endif
             endwhile
-        endif else begin
-            self.error, 'Bad character: A letter expected.'
-        endelse
-
-    end
-
-    else: self.error, "Bad character"
-
-
-endcase
+        end
+    
+        ; system variable
+        self.char eq '!': begin
+            self.nextc
+            if isAlpha(self.char) then begin
+                while 1 do begin
+                    self.nextc
+                    if ~(isAlnum(self.char) || self.char eq '_') then begin
+                        if self.getLexeme() eq '!NULL' then return, self.TOKEN.T_NULL else return, self.TOKEN.T_SYSV
+                    endif
+                endwhile
+            endif else begin
+                self.error, 'Bad character: A letter expected.'
+            endelse
+    
+        end
+    
+        else: self.error, "Bad character"
+    
+    endcase
+    
 end
 
 function MidleLexer::lex, lines

@@ -9,16 +9,9 @@
 ; slices can be retrieved if a vector is passed in the position of the `slice`
 ; parameter.
 ; 
-;   NOTE there are several differences from slice_nd:
-;   
-; 1. The dim parameter starts from 1 for the first dimension
+;   NOTE that the dimension keyword parameter starts from 1 as the first
+; dimension.
 ; 
-; 2. The dimension definition is passed as the first parameter instead of the 
-;    actual array. The dimension definition is a vector, with each element 
-;    represents the size of corresponding dimension.
-;    
-; 3. The Return value is the slice indices instead of the actual sliced array.
-;
 ; :Author:
 ;   Yang Wang (ywangd@gmail.com)
 ;
