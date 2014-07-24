@@ -1,15 +1,18 @@
-# MIDLE - A Mini IDL Statement Evaluator in IDL
-Evaluate IDL statements without `EXECUTE`, i.e. virtual machine safe. It is
-*almost* a replacement of `EXECUTE`.
+# MIDLE - A Mini IDL Evaluator in IDL
+Evaluate IDL statements and expressions without `EXECUTE`, i.e. virtual machine
+safe. It can be an alternative to `EXECUTE` in many cases.
 
-MIDLE implements its own parser and evaluates broad categories of IDL statements
-without resorting to the power of `EXECUTE`. It even adds additional language
-features such as syntax for HASH and LIST literals, higher level array
-concatenation, bettering support for chaining function/method calls and
-subscripts. MIDLE however is not without limitations. They are mostly due to the
-limit of IDL language itself, notably output arguments and object property
-access (object method calls are OK). It also deliberately leaves out some IDL
-features by design.
+MIDLE implements its own parser and evaluates simple IDL statements and
+expressions without resorting to the power of `EXECUTE`. It even adds
+[additional language features](#added-features) such as syntax for HASH and LIST
+literals, higher level array concatenation, bettering support for chaining
+function/method calls and subscripts. 
+
+MIDLE is however not without limitations. Some limitations are due to the limit
+of IDL language itself, notably output arguments and object property access
+(object method calls are OK). Others are deliberately set by design to meet the
+scope of MIDLE, notably program control constructs. Please refer to [Missing
+Features](#missing-features) section for details.
 
 MIDLE requires IDL 8.0 or up (8.3 is recommended).
 
@@ -179,14 +182,19 @@ pairs of parenthesis (as expected in other modern languages):
 print, midle('list(indgen(10)[0:*:2][2:4], /extract).count()')
 ```
 
-## Missing Features
+## <a name="missing-features"></a>Missing Features
 The missing features fall into two categories. The first category is *By Design*
 that means they are deliberately left out to narrow the scope of MIDLE so it can
-focus on more important tasks. Alternatives can be found for most of them. The
-second category is a result of IDL's own limitations and cannot be technically
-circumvented (please let me know if there are ways to add them). 
+focus on more important tasks. The second category is a result of IDL's own
+limitations and cannot be technically circumvented (please let me know if there
+are ways to add them). 
 
 ### By Design
+- Program control constructs are not supported. This means no support for
+  `IF...THEN...ELSE`, `CASE`, `SWITCH`, `WHILE`, `REPEAT`, `FOR`, `FOREACH`,
+  `GOTO`, etc.
+- No support for routine definitions, i.e. `PRO`, `FUNCTION` (`EXECUTE` does not
+  Support them either).
 - Hex and Oct literals are not supported
 - Only anonymous structure is supported. This means no named structure, no
   inheritance.
@@ -210,7 +218,7 @@ circumvented (please let me know if there are ways to add them).
   variables are OK)
 
 
-## Added Features (Incompatibility)
+## <a name="added-features"></a>Added Features
 Valid MIDLE expressions are mostly valid IDL expression as well. However, there
 are a few exceptions due to MIDLE's added features. User can easily choose to
 not use them or use parenthesis to enforce IDL's default behaviours. Many of the
@@ -264,10 +272,9 @@ associativity.
 
 
 ## Known issues
-* File inclusion leads to wrong line number in error report. This is because
-  an array of lines is formed by the contents from all files and passed as input
-  to the parser. The line number is the same as the index of each line in the
-  array, not the line number in the file.
+* File inclusion leads to incorrect line number for error report. 
+* AstNode instances created during AssignNode evaluation have incorrect line
+  and column numbers.
 
 
 ## Contributing
