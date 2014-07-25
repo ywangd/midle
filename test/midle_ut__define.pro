@@ -258,11 +258,11 @@ function Midle_ut::test_assignment
     assert, array_equal_exact(env.a, indgen(10))
     
     assert, midle('a[3] = 42', env) eq 42
-    assert, env["a", 3] eq 42
+    assert, env["a", 3] eq 42, '1'
     
     midle, 'h = h{}', env
     midle, 'h["x"] = (42, indgen(3,4,5), 22, "hello", "world")', env
-    assert, midle('h["x", 4] = "life"', env) eq 'life'
+    assert, midle('h["x", 4] = "life"', env) eq 'life', '2'
     assert, env["h", "x", 4] eq 'life'
     assert, midle('h["x", 1, 2, 3] = 99', env) eq 99
     assert, env["h", "x", 1, 2, 3] eq 99
@@ -280,6 +280,15 @@ function Midle_ut::test_assignment
     assert, env["st"].(1)[1,2,3] eq 99
     assert, midle('st.y[0:1, *, 0:4:2] = 42', env) eq 42
     assert, array_equal_exact(env["st"].(1)[0:1, *, 0:4:2], make_array(2,4,3, value=42))
+    
+    midle, 'b = [(1,2,3), (4,5,6), h{}, (7,8,9)]', env
+    assert, midle('b[1][1] = 42', env) eq 42
+    assert, ((env.b)[1])[1] eq 42
+    midle, 'b[2]["st"] = {x: indgen(3,4,5), y: 42, z: indgen(3,5)}', env
+    assert, midle('b[2]["st"].x[1,2,3] = 99', env) eq 99
+    assert, (((env.b)[2])['st']).(0)[1,2,3] eq 99
+    midle, 'b[2]["st"].z[[0,2],0:4:2] = 99', env
+    assert, array_equal_exact((((env.b)[2])['st']).(2)[[0,2],0:4:2], make_array(2,3, value=99))
     
     return, 1
 end
