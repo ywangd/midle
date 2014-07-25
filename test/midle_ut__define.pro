@@ -91,36 +91,39 @@ function Midle_ut::test_subscripts
     a = lindgen(5,4,3,2)
     env = Hash('a', a)
     
-    assert, array_equal_exact(midle('a[42]', env), a[42])
-    assert, array_equal_exact(midle('a[[22,42,24]]', env), a[[22,42,24]])
-    assert, array_equal_exact(midle('a[*]', env), a[*])
-    assert, array_equal_exact(midle('a[1:15]', env), a[1:15])
-    assert, array_equal_exact(midle('a[3:110:3]', env), a[3:110:3])
+    assert, array_equal_exact(midle('a[42]', env), a[42]), '1'
+    assert, array_equal_exact(midle('a[[22,42,24]]', env), a[[22,42,24]]), '2'
+    assert, array_equal_exact(midle('a[*]', env), a[*]), '3'
+    assert, array_equal_exact(midle('a[1:15]', env), a[1:15]), '4'
+    assert, array_equal_exact(midle('a[3:110:3]', env), a[3:110:3]), '5'
     
-    assert, array_equal_exact(midle('a[[1,2],[1,2]]', env), a[[1,2],[1,2]])
-    assert, array_equal_exact(midle('a[[1,2],[1,2],0]', env), a[[1,2],[1,2],0])
-    assert, array_equal_exact(midle('a[[1,2],[1,2],*]', env), a[[1,2],[1,2],*])
-    assert, array_equal_exact(midle('a[[1,2],[1,2],0:2,*]', env), a[[1,2],[1,2],0:2,*])
+    assert, array_equal_exact(midle('a[[1,2],[1,2]]', env), a[[1,2],[1,2]]), '6'
+    assert, array_equal_exact(midle('a[[1,2],[1,2],0]', env), a[[1,2],[1,2],0]), '7'
+    assert, array_equal_exact(midle('a[[1,2],[1,2],*]', env), a[[1,2],[1,2],*]), '8'
+    assert, array_equal_exact(midle('a[[1,2],[1,2],0:2,*]', env), a[[1,2],[1,2],0:2,*]), '9'
     
-    assert, array_equal_exact(midle('a[0:4:2,*,[0,2],*]', env), a[0:4:2,*,[0,2],*])
+    assert, array_equal_exact(midle('a[0:4:2,*,[0,2],*]', env), a[0:4:2,*,[0,2],*]), '10'
     
-    a = hash("x", hash("q", indgen(3,4), "r", list(5, indgen(3,4,5,start=90),7)), "y", 2, "z", list(3, 4, indgen(3,4,5),8,[list('h','e'),list('w','d')])) 
+    assert, array_equal_exact(midle('a[0:4:2,*,1,*,0,0,0,0]', env), a[0:4:2,*,1,*,0,0,0,0]), '11'
+    assert, array_equal_exact(midle('a[0:4:2,*,1,*,0,*,0:0,0:-1]', env), a[0:4:2,*,1,*,0,*,0:0,0:-1]), '11'
+    
+    a = hash("x", hash("q", indgen(3,4), "r", list(5, indgen(3,4,5,start=90),7)), "y", 2, "z", list(3, 4, indgen(3,4,5),8,[list('h','e'),list('w','d')]))
     env = Hash('a', a)
-    assert, midle('a["x","r",1,2,3]', env) eq a["x","r",1,2,3]
+    assert, midle('a["x","r",1,2,3]', env) eq a["x","r",1,2,3], '12'
     
-    assert, array_equal_exact(midle('a["x","r",1,*]', env), a["x","r",1,*])
+    assert, array_equal_exact(midle('a["x","r",1,*]', env), a["x","r",1,*]), '13'
     
-    assert, array_equal_exact(midle('a["x","r",1,1:2,1:3]', env), a["x","r",1,1:2,1:3])
+    assert, array_equal_exact(midle('a["x","r",1,1:2,1:3]', env), a["x","r",1,1:2,1:3]), '14'
     
-    assert, array_equal_exact(midle('a["x","r",1,5:25]', env), a["x","r",1,5:25])
+    assert, array_equal_exact(midle('a["x","r",1,5:25]', env), a["x","r",1,5:25]), '15'
     
-    assert, array_equal_exact(midle('a["x","r",1,1:2,1:3,0:3:2]', env), a["x","r",1,1:2,1:3,0:3:2])
+    assert, array_equal_exact(midle('a["x","r",1,1:2,1:3,0:3:2]', env), a["x","r",1,1:2,1:3,0:3:2]), '16'
     
-    assert, array_equal_exact(midle('a["x","r",1,[1,2],[2,3]]', env), a["x","r",1,[1,2],[2,3]])
+    assert, array_equal_exact(midle('a["x","r",1,[1,2],[2,3]]', env), a["x","r",1,[1,2],[2,3]]), '17'
     
-    assert, array_equal_exact(midle('a["x","r",1,[1,2],[2,3],*]', env), a["x","r",1,[1,2],[2,3],*])
+    assert, array_equal_exact(midle('a["x","r",1,[1,2],[2,3],*]', env), a["x","r",1,[1,2],[2,3],*]), '18'
     
-    assert, min(midle('a["z",4,0]', env) eq a["z",4,0]) eq 1
+    assert, min(midle('a["z",4,0]', env) eq a["z",4,0]) eq 1, '19'
 
     return, 1
 end
@@ -257,8 +260,8 @@ function Midle_ut::test_assignment
     assert, midle('a[3] = 42', env) eq 42
     assert, env["a", 3] eq 42
     
-    !NULL = midle('h = h{}', env)
-    !NULL = midle('h["x"] = (42, indgen(3,4,5), 22, "hello", "world")', env)
+    midle, 'h = h{}', env
+    midle, 'h["x"] = (42, indgen(3,4,5), 22, "hello", "world")', env
     assert, midle('h["x", 4] = "life"', env) eq 'life'
     assert, env["h", "x", 4] eq 'life'
     assert, midle('h["x", 1, 2, 3] = 99', env) eq 99
@@ -266,13 +269,13 @@ function Midle_ut::test_assignment
     assert, midle('h["x", 1, 0:1, *, 0:4:2] = 42', env) eq 42
     assert, array_equal_exact(env["h", "x", 1, 0:1, *, 0:4:2], make_array(2,4,3, value=42))
     
-    !NULL = midle('st = {x: 4.2, y: 2.2}', env)
+    midle, 'st = {x: 4.2, y: 2.2}', env
     assert, midle('st.y = 4.2', env) eq 4.2
     assert, env["st"].(1) eq 4.2
     assert, midle('st.(0) = 2.2', env) eq 2.2
     assert, env["st"].(0) eq 2.2
     
-    !NULL = midle('st = {x: 4.2, y: indgen(3,4,5)}', env)
+    midle, 'st = {x: 4.2, y: indgen(3,4,5)}', env
     assert, midle('st.y[1,2,3] = 99', env) eq 99
     assert, env["st"].(1)[1,2,3] eq 99
     assert, midle('st.y[0:1, *, 0:4:2] = 42', env) eq 42

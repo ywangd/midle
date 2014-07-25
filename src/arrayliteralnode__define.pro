@@ -39,7 +39,17 @@ function ArrayLiteralNode::eval, env
     endelse
     
     ; Level 0 is the same as level 1 for concatenation. Their difference is
-    ; only meaningful to the parents when calculating parent's level. 
+    ; only meaningful to the parents when calculating parent's level.
+    catch, theError
+    if theError ne 0 then begin
+        catch, /cancel
+        self.error, !error_state.msg
+        if !error_state.name eq 'IDL_M_TYPCNVERR' then begin
+            self.error, !error_state.msg
+        endif else begin
+            message, /reissue_last
+        endelse
+    endif 
     ret = []
     foreach item, items do begin
         ret = arrayconcat(ret, item, dimension=self.level eq 0 ? 1 : self.level)

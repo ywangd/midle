@@ -5,7 +5,7 @@
 ;   Yang Wang (ywangd@gmail.com)
 ;-
 
-function IdxlistNode::eval, env, shp, fromIndex=fromIndex, toIndex=toIndex, isRanges=isRanges
+function IdxlistNode::eval, env, fromIndex=fromIndex, toIndex=toIndex, isRanges=isRanges
     
     nd = self.operands.count()
     
@@ -14,19 +14,12 @@ function IdxlistNode::eval, env, shp, fromIndex=fromIndex, toIndex=toIndex, isRa
     
     if fromIndex gt toIndex || (toIndex - fromIndex) ge 8 then self.error, 'Invalid number of dimensions'
         
-    ; Special case of a single index
-    if toIndex - fromIndex eq 0 then begin
-        idxlist = list((self.operands[fromIndex]).eval(env, shp, 0, /onlyIndex))
-        isRanges = [0]
-        return, idxlist
-    endif
-    
     isRanges = []
     idxlist = list()
     for idx = fromIndex, toIndex do begin
         operand = self.operands[idx]
-        idxlist.add, operand.eval(env, shp, idx-fromIndex, isRange=isR)
-        isRanges = [isRanges, isR]
+        idxlist.add, operand.eval(env, isRange=isr)
+        isRanges = [isRanges, isr]
     endfor
     
     return, idxlist

@@ -25,7 +25,7 @@ that `EXECUTE` cannot run in IDL virtual machines.
 MIDLE is designed to fill the gap. It initially focused only on the
 right-hand-side of the `=` sign, i.e. the expression and was later decided to
 support full assignment statements as well as procedure calls. It now has a much
-broader scope than what it is originated from.
+broader scope than what it was originated from.
 
 It is also worth to note that MIDLE is not envisioned to be fast or memory
 efficient (at least not now). For situations where `EXECUTE` is needed, you
@@ -175,7 +175,7 @@ print, midle('(4.2d3, "String", "A Hash next", h{"x": 4.2, "y": 2.2})')
 Higher level array concatenation:
 ```IDL
 env = {a: indgen(6,5,4,3,2), b: indgen(6,5,4,3,2, start=720)}
-help, midle('[ [[[[a]]]], [[[[b]]]] ]', env)
+help, midle('[ [[[[a]]]], [[[[b]]]] ]', env)  ; concatenate on the 5th dimension
 ```
 
 Function/method calls and subscripts can be chained without the need of extra
@@ -220,18 +220,18 @@ You can also evaluate the `ast` object to get the result again.
 print, ast.eval()
 ```
 
-The `error` output keyword is used to check whether the call to MIDLE is
+The `error` output keyword can be used to check whether the call to MIDLE is
 successful. It will be `!NULL` if the call succeeds. Or it will be a string
 containing the error message.
 ```IDL
-print, midle('42 + a', error=error)
+print, midle('42 + a', error=error)  ; varaible a is undefined
 ```
 The content of `error` is now `MIDLE_RUNTIME_ERR - Undefined variable: a`.
 
 
 ## <a name="missing-features"></a>Missing Features
 The missing features fall into two broad categories. The first category is *By
-Design* that means they are deliberately left out to narrow the scope of MIDLE
+Design* which means they are deliberately left out to narrow the scope of MIDLE
 so it can focus on more important tasks. The second category is a result of
 IDL's own limitations and cannot be technically circumvented (please let me
 know if there are ways to add them). 
@@ -248,12 +248,14 @@ know if there are ways to add them).
 - Compound operators are not supported, i.e. `++`, `--`, `+=`, `-=`, etc.
 - Pointer de-reference is not supported, i.e. `*pointer`
 - The `->` operator is not supported as most times it can be replaced by `.`
-- Creation and assignment of system variables are not supported
+- Creation and assignment of system variables are not supported (their values
+  are readable)
 - Parenthesis over assignment statement are not supported, i.e. `x = (y = 42)`
-- Variable name cannot have `$` character
+- Variable name cannot have the `$` character
 
 ### By IDL's limitations
-- Output positional and keyword arguments are not supported
+- Output positional and keyword arguments are not supported (I really wanted to
+  support these. But it is just impossible in IDL.)
 - Object property access using dot notation, i.e. `object.property` are not
   supported
     * The dot notation can be used with Hash like object to get the value by
@@ -331,9 +333,6 @@ as well). The unit test file has some more example ussages of MIDLE.
 
 ## Known issues
 * File inclusion leads to incorrect line number for error report. 
-* AstNode instances created during AssignNode evaluation have incorrect line
-  and column numbers.
-
 
 ## Contributing
 - Check any open issues or open a new issue to start discussions about your

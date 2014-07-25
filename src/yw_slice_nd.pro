@@ -10,7 +10,7 @@
 ; parameter.
 ; 
 ;   NOTE that the dimension keyword parameter starts from 1 as the first
-; dimension.
+; dimension (while JD Smith's slice_nd counts dimension from 0).
 ; 
 ; :Author:
 ;   Yang Wang (ywangd@gmail.com)
@@ -49,7 +49,7 @@ function yw_slice_nd, array, slice, dimension=dim
     shape = size(array, /dimensions)
     ndims = n_elements(shape)
     
-    if max(slice) ge shape[dim-1] then message, 'Invalide slicing index'
+    if max(slice) ge shape[dim-1] then message, 'Invalid slicing index'
     ;
     ; Special case for input array is a vector
     if ndims eq 1 then return, array[slice]

@@ -25,8 +25,8 @@ function AssignNode::eval, env
         env[varname] = rhsval
 
     endif else if isa(lhs, 'SubscriptNode') then begin
-        host = lhs.eval_lhs(env, subs=subs, idxlist=idxlist)
-        nsubs = idxlist.count()
+        host = lhs.eval_lhs(env, subs=subs, list_of_indexnode=list_of_indexnode)
+        nsubs = list_of_indexnode.count()
         
         ; Check whether the assignment is to an array element inside a structure
         if isa(host, 'MemberNode') then begin
@@ -46,10 +46,12 @@ function AssignNode::eval, env
                 idxToStruct = structField.eval(env)
             endelse
             
-            node = SubscriptNode(self.lexer, IdentNode(self.lexer, 'a'), subs)
+            ; Calcualte the indices for the assignment values
             shp = size(host.eval(env), /dimension)
             if isa(shp, /scalar) then shp = [1]
-            index = node.eval(hash('a', lindgen(shp)))
+            idxlist = subs.eval(env, isRanges=isRanges)
+            index = arraycut(lindgen(shp), isRanges, idxlist)
+            
             structHostVal.(idxToStruct)[index] = rhsval
             env[structHostName] = structHostVal
             
@@ -63,12 +65,22 @@ function AssignNode::eval, env
             ; new copies
             hostVal = env[hostName]
             ii = 0 & parentVal = hostVal
+            ; Error handling for subscript range error
+            catch, theError
+            if theError ne 0 then begin
+                catch, /cancel
+                if !error_state.name eq 'IDL_M_ILLGL_RANGE' then begin
+                    self.error, 'Illegal subscript range'
+                endif else message, /reissue_last
+            endif
             while (isa(hostVal, 'Hash') || isa(hostVal, 'List')) && ii lt nsubs do begin
-                index = idxlist[ii]
-                sub = index.eval(env, [n_elements(hostVal)], 0)
+                index = list_of_indexnode[ii]
+                sub = index.eval(env, isRange=isr)
+                ; Build the range subscripts from its start, end spec
+                if isr then sub = (lindgen(hostVal.count()))[sub[0]:sub[1]:sub[2]]
                 ii += 1
                 parentVal = hostVal
-                if (isa(hostVal, 'Hash') && hostVal.haskey(sub)) || (isa(hostVal, 'List') && sub lt hostVal.count()) then begin
+                if (isa(hostVal, 'Hash') && hostVal.haskey(sub)) || (isa(hostVal, 'List') && max(sub) lt hostVal.count()) then begin
                     hostVal = hostVal[sub]
                 endif else begin
                     if ii eq nsubs then break else self.error, 'Key does not exist: ' + sub
@@ -79,13 +91,11 @@ function AssignNode::eval, env
             if ii ge nsubs then begin
                 parentVal[sub] = rhsval
             endif else begin
-                ; delegate the subscript task to a new subscript node
-                ilnode = IdxlistNode(self.lexer)
-                for jj=ii, nsubs -1 do ilnode.add, idxlist[jj]
-                node = SubscriptNode(self.lexer, IdentNode(self.lexer, 'a'), ilnode)
                 shp = size(hostVal, /dimension)
                 if isa(shp, /scalar) then shp = [1]
-                index = node.eval(hash('a', lindgen(shp)))
+                idxlist = subs.eval(env, isRanges=isRanges, fromIndex=ii)
+                index = arraycut(lindgen(shp), isRanges, idxlist)
+                
                 if ii eq 0 then begin ; an array subscript directly in env
                     env[hostName, index] = rhsval
                 endif else begin ; an array subscript inside a list or hash

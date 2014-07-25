@@ -25,6 +25,8 @@ function arrayconcat, a1, a2, dimension=dimension
     if n_elements(a1) eq 0 || n_elements(a2) eq 0 then return, [a1, a2]
     if n_elements(dimension) eq 0 then dimension=1
 
+    on_ioerror, ERR  ; handle type conversion error when concatenating
+
     switch dimension of
         1: return, [a1, a2]
         2: return, [[a1], [a2]]
@@ -62,6 +64,9 @@ function arrayconcat, a1, a2, dimension=dimension
 
         else: message, 'Invalid dimension (min: 1, max: 8)'
     endswitch
+    
+    ERR:
+    message, !error_state.msg, /noprefix, /noname, /noprint
 
 end
 
