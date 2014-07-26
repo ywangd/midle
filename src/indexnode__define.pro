@@ -9,6 +9,7 @@
 ; list of numbers, i.e. it takes form of [start, end, step]
 function IndexNode::eval, env, isRange=isRange
     compile_opt logical_predicate
+    @ast_error_handler
 
     isRange = 0
     
@@ -23,7 +24,7 @@ function IndexNode::eval, env, isRange=isRange
     endif else begin ; subscript has 2 or more elements, i.e. 0:9, 0:9:2
 
         isRange = 1
-        if isa(self.operands[0], 'WildcardNode') then self.error, 'Invalid *:n subscript'
+        if isa(self.operands[0], 'WildcardNode') then message, 'Invalid *:n subscript', /noname
         
         index = [(self.operands[0]).eval(env)]
         index = [index, isa(self.operands[1], 'WildcardNode') ? -1 : (self.operands[1]).eval(env)]
@@ -32,7 +33,7 @@ function IndexNode::eval, env, isRange=isRange
             if ~isa(self.operands[2], 'WildcardNode') then begin
                 index = [index, (self.operands[2]).eval(env)]
             endif else begin
-                self.error, 'Invalid n:n:* subscript'
+                message, 'Invalid n:n:* subscript', /noname
             endelse
         endif else index = [index, 1]
 

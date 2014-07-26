@@ -78,3 +78,20 @@ pro midle, _lines_or_file, _env, file=file, ast=ast, error=error
     !NULL = midle(_lines_or_file, _env, file=file, ast=ast, error=error)
     
 end
+
+
+;+
+; :Description:
+;    Entry routine of Virtual Machine Application. Only for testing purpose.
+;-
+pro main
+    
+    midle, 'a = h{"x": (1,2), "y": "Hello World"}', env
+    msg = strjoin(string(env, /implied_print))
+    
+    ok = dialog_message(msg)
+
+end
+
+
+

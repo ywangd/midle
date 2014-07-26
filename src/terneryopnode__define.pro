@@ -6,6 +6,8 @@
 ;-
 
 function TerneryOpNode::eval, env
+    @ast_error_handler
+
     predicate = self.operands[0].eval(env)
     val_true = self.operands[1].eval(env)
     val_false = self.operands[2].eval(env)

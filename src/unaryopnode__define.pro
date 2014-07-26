@@ -6,6 +6,8 @@
 ;-
 
 function UnaryOpNode::eval, env
+    @ast_error_handler
+
     TOKEN = self.lexer.TOKEN
     val = self.operands[0].eval(env)
     case self.operator of
@@ -13,7 +15,7 @@ function UnaryOpNode::eval, env
         TOKEN.T_SUB: val = -val
         TOKEN.T_LNOT: val = ~val
         TOKEN.T_BNOT: val = not val
-        else: self.error, 'Unrecognized operator'
+        else: message, 'Unrecognized operator', /noname
     endcase
     return, val
 end

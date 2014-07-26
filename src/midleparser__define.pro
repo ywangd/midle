@@ -20,12 +20,12 @@ function MidleParser::parse_argument
                 IdentNode(self.lexer, self.lexeme), NumberNode(self.lexer, '1', 2))
             self.matchToken, self.TOKEN.T_IDENT
         endif else begin
-            self.error, 'Identifier expected for keyword argument'
+            message, 'Identifier expected for keyword argument', /noname
         endelse
     endif else begin
         node = self.parse_ternary_expr()
         if self.tag eq self.token.t_assign then begin
-            if ~isa(node, 'IdentNode') then self.error, 'Identifier expected for keyword argument'
+            if ~isa(node, 'IdentNode') then message, 'Identifier expected for keyword argument', /noname
             self.matchToken, self.tag
             node = KeyargNode(self.lexer, node, self.parse_ternary_expr())
         endif
@@ -159,7 +159,7 @@ function MidleParser::parse_trailer
         if self.tag ne self.TOKEN.T_RBRACKET then begin
             node = self.parse_idxlist()
         endif else begin
-            self.error, 'Invalid subscript'
+            message, 'Invalid subscript', /noname
         endelse
         self.matchToken, self.TOKEN.T_RBRACKET
 
@@ -173,7 +173,7 @@ function MidleParser::parse_trailer
             node = IdentNode(self.lexer, self.lexeme)
             self.matchToken, self.TOKEN.T_IDENT
         endif else begin
-            self.error, 'Identifier expected'
+            message, 'Identifier expected', /noname
         endelse
     endelse
     return, node
@@ -224,7 +224,7 @@ function MidleParser::parse_atom
         if self.tag ne self.TOKEN.T_RCURLY then begin
             node = self.parse_deflist(self.TOKEN.T_LCURLY)
         endif else begin
-            node = ListNode(self.lexer, self.TOKEN.T_LCURLY)
+            node = NullNode(self.lexer, '{}')
         endelse
         self.matchToken, self.TOKEN.T_RCURLY
 
@@ -258,7 +258,7 @@ function MidleParser::parse_atom
         self.getToken
 
     endif else begin
-        self.error, 'Unrecognized token: ' + self.lexeme
+        message, 'Unrecognized token: ' + self.lexeme, /noname
     endelse
 
     return, node
@@ -372,6 +372,13 @@ end
 ; At the end of each parse function, self.tag always points to the next
 ; un-processed token.
 function MidleParser::parse, lines
+    catch, theError
+    if theError ne 0 then begin
+        catch, /cancel
+        self.showError, !error_state.msg
+        message, 'MIDLE_PARSER_ERR - ' + !error_state.msg, /noprint, /noname, /noprefix
+    endif
+
     self.lexer.feed, lines
     
     ; The statement list
@@ -394,7 +401,7 @@ function MidleParser::parse, lines
             endif
 
             if self.tag ne self.TOKEN.T_EOL then begin
-                self.error, 'Bad character: ' + strmid(self.lexer.buffer, self.lexer.start_pos, 1)
+                message, 'Bad character: ' + strmid(self.lexer.buffer, self.lexer.start_pos, 1), /noname
             endif
             
             stmts.add, node
@@ -408,7 +415,7 @@ function MidleParser::parse, lines
 end
 
 
-pro MidleParser::error, msg
+pro MidleParser::showError, msg
     print
     print, !error_state.msg_prefix, ' [SyntaxError] ', msg
     print, !error_state.msg_prefix, ' Line ', strtrim(self.lexer.lineno+1,2) + ', Col ', strtrim(self.lexer.start_pos+1,2)
@@ -417,7 +424,6 @@ pro MidleParser::error, msg
     if self.lexer.start_pos gt 0 then leadingSpace = strjoin(replicate(' ', self.lexer.start_pos))
     print, leadingSpace, '^'
     print
-    message, 'MIDLE_PARSER_ERR - ' + msg, /noprint, /noname, /noprefix
 end
 
 function MidleParser::numberCode, tag
@@ -467,7 +473,7 @@ end
 
 pro MidleParser::matchToken, tag
     if self.tag ne tag then begin
-        self.error, 'Bad token' 
+        message, 'Bad token' , /noname
     endif
     self.getToken
 end

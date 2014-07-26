@@ -6,6 +6,8 @@
 ;-
 
 function StringNode::eval, env
+    @ast_error_handler
+
     val = strmid(self.lexeme, 1, strlen(self.lexeme)-2)
     ; process escaped quotes
     quote = strmid(self.lexeme, 0, 1)

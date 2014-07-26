@@ -6,6 +6,7 @@
 ;-
 
 function ListNode::eval, env
+    @ast_error_handler
 
     TOKEN = self.lexer.TOKEN
 
@@ -17,7 +18,7 @@ function ListNode::eval, env
             if isa(key, /number, /scalar) || isa(key, 'String', /scalar) then begin
                 ret[key] = (self.operands[i+1]).eval(env)
             endif else begin
-                self.error, 'Invalid Hash key:' + strtrim(key,2)
+                message, 'Invalid Hash key:' + strtrim(key,2), /noname
             endelse
         endfor
 
@@ -26,7 +27,7 @@ function ListNode::eval, env
         ret = {}
         for i = 0, self.operands.count()-1, 2 do begin
             key = self.operands[i]
-            if ~isa(key, 'IdentNode') then self.error, 'Invalid structure field name'
+            if ~isa(key, 'IdentNode') then message, 'Invalid structure field name', /noname
             keyName = key.eval(env, /lexeme)
             ret = create_struct(ret, keyName, (self.operands[i+1]).eval(env))
         endfor

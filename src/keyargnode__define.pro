@@ -6,11 +6,13 @@
 ;-
 
 function KeyargNode::eval, env
+    @ast_error_handler
+
     name = self.operands[0]
     if isa(name, 'IdentNode') then begin
         name = name.eval(env, /lexeme)
     endif else begin
-        self.error, 'Invalid keyword argument' 
+        message, 'Invalid keyword argument', /noname
     endelse
     return, create_struct(name, (self.operands[1]).eval(env))
 end

@@ -297,7 +297,7 @@ This limitation is lifted in MIDLE. Up to eight level of brackets is now
 supported. MIDLE delegates the array concatenation task to an utility program
 called `arrayconcat`, which can also be used as standalone program.
 
-### Better chaining for function/method calls and subscripts
+### Better support for chaining function/method calls and subscripts
 Parenthesis are often required in IDL if you want to chain a few calls and
 subscripts. For an example, say we have a hash variable `h` as `hash('x',3,
 'y',5,'z',3)`, the expression `h.where(3)[0]` is illegal in IDL. To chain the

@@ -7,6 +7,7 @@
 
 function ProcCallNode::eval, env
     compile_opt logical_predicate
+    @ast_error_handler
 
     proc = self.operands[0]
     p = (self.operands[1]).eval(env, k=k)
@@ -25,7 +26,7 @@ function ProcCallNode::eval, env
             7: if nk then call_procedure, procname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], _extra=k else call_procedure, procname, p[0], p[1], p[2], p[3], p[4], p[5], p[6]
             8: if nk then call_procedure, procname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], _extra=k else call_procedure, procname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]
             9: if nk then call_procedure, procname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], _extra=k else call_procedure, procname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]
-            else: self.error, 'Too many positional arguments'
+            else: message, 'Too many positional arguments', /noname
         endcase
 
     endif else if isa(proc, 'MemberNode') then begin
@@ -41,10 +42,10 @@ function ProcCallNode::eval, env
             7: if nk then call_method, member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], _extra=k else call_method, member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6]
             8: if nk then call_method, member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], _extra=k else call_method, member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]
             9: if nk then call_method, member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], _extra=k else call_method, member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]
-            else: self.error, 'Too many positional arguments'
+            else: message, 'Too many positional arguments', /noname
         endcase
     endif else begin
-        self.error, 'Invalid procedure call'
+        message, 'Invalid procedure call', /noname
     endelse
 
     return, !NULL

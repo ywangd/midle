@@ -6,6 +6,8 @@
 ;-
 
 function AssignNode::eval, env
+    @ast_error_handler
+
     lhs = self.operands[0]
     rhs = self.operands[1]
 
@@ -79,21 +81,21 @@ function AssignNode::eval, env
                 if isa(member, 'IdentNode') then begin  ; struct.field
                     memberName = member.eval(env, /lexeme)
                     idx = where(tag_names(hostVal) eq strupcase(memberName), count)
-                    if count gt 0 then hostVal.(idx[0]) = targetVal else self.error, 'Field does not exist: ' + memberName
+                    if count gt 0 then hostVal.(idx[0]) = targetVal else message, 'Field does not exist: ' + memberName, /noname
                 endif else begin  ; struct.(index)
                     memberVal = member.eval(env)
                     hostVal.(memberVal) = targetVal
                 endelse
 
             endif else begin
-                self.error, 'Invalid LHS variable for assignment'
+                message, 'Invalid LHS variable for assignment', /noname
             endelse
 
             target = host
             targetVal = hostVal
 
         endif else begin
-            self.error, 'Invalid LHS variable for assignment'
+            message, 'Invalid LHS variable for assignment', /noname
         endelse
 
     endwhile

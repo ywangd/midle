@@ -6,6 +6,8 @@
 ;-
 
 function SysvarNode::eval, env
+    @ast_error_handler
+
     case strupcase(self.lexeme) of
         '!C': return, !C
         '!COLOR': return, !COLOR
@@ -41,7 +43,7 @@ function SysvarNode::eval, env
         '!X': return, !X
         '!Y': return, !Y
         '!Z': return, !Z
-        else: self.error, 'Unrecognized system variable: ' + self.lexeme
+        else: message, 'Unrecognized system variable: ' + self.lexeme, /noname
     endcase
 end
 

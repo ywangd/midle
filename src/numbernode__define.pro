@@ -6,6 +6,8 @@
 ;-
 
 function NumberNode::eval, env
+    @ast_error_handler
+
     ; Byte is special as Fix to byte produces the ascii codes of letters in the string
     ; So the string has to be convert to int first then convert to byte.
     if self.typeCode eq 1 then begin

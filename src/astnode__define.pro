@@ -8,16 +8,15 @@
 ; 	Yang Wang (ywangd@gmail.com)
 ;-
 
-pro AstNode::error, msg
+pro AstNode::showError, msg
     print
-    print, !error_state.msg_prefix, ' [RuntimeError] ', msg
-    print, !error_state.msg_prefix, ' Line ', strtrim(self.lineno+1,2) + ', Col ', strtrim(self.colno+1,2)
+    print, !error_state.msg_prefix, '[RuntimeError] ', msg
+    print, !error_state.msg_prefix, 'Line ', strtrim(self.lineno+1,2) + ', Col ', strtrim(self.colno+1,2)
     print, self.lexer.getLine(self.lineno)
     leadingSpace = ''
     if self.colno gt 0 then leadingSpace = strjoin(replicate(' ', self.colno))
     print, leadingSpace, '^'
     print
-    message, 'MIDLE_RUNTIME_ERR - ' + msg, /noprint, /noname, /noprefix
 end
 
 

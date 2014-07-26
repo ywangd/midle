@@ -71,7 +71,7 @@ end
 
 pro MidleLexer::matchc, c
     self.nextc
-    if self.char ne c then self.error, 'Bad character: ' + c + ' expected'
+    if self.char ne c then message, 'Bad character: ' + c + ' expected', /noname
 end
 
 
@@ -88,7 +88,7 @@ function MidleLexer::keywordLookup
     endelse
 end
 
-pro MidleLexer::error, msg
+pro MidleLexer::showError, msg
     print
     print, !error_state.msg_prefix, ' [SyntaxError] ', msg
     print, !error_state.msg_prefix, ' Line ', strtrim(self.lineno+1,2) + ', Col ', strtrim(self.lookahead_pos,2)
@@ -97,7 +97,6 @@ pro MidleLexer::error, msg
     if self.lookahead_pos-1 gt 0 then leadingSpace = strjoin(replicate(' ', self.lookahead_pos-1))
     print, leadingSpace, '^'
     print
-    message, 'MIDLE_LEXER_ERR - ' + msg, /noprint, /noname, /noprefix
 
 end
 
@@ -108,7 +107,7 @@ function MidleLexer::processScientificNotation, notation
         self.nextc
         ; If + or - is seen, a digit is required to follow.
         ; Otherwise digit is optional as 42D or 42E are both valid.
-        if ~isDigit(self.char) then self.error, "Digits expected"
+        if ~isDigit(self.char) then message, "Digits expected", /noname
     endif
 
     while isDigit(self.char) do begin
@@ -138,6 +137,12 @@ end
 ; When getToken returns, self.char points to the first character in the buffer
 ; that is not processed. lookahead_pos is one position further to the right.
 function MidleLexer::getToken
+    catch, theError
+    if theError ne 0 then begin
+        catch, /cancel
+        self.showError, !error_state.msg
+        message, 'MIDLE_LEXER_ERR - ' + !error_state.msg, /noprint, /noname, /noprefix
+    endif
 
     self.nextNonwhite
     ; We can check the line continuation and comments before checking for any
@@ -395,12 +400,12 @@ function MidleLexer::getToken
                     endif
                 endwhile
             endif else begin
-                self.error, 'Bad character: A letter expected.'
+                message, 'Bad character: A letter expected.', /noname
             endelse
     
         end
     
-        else: self.error, "Bad character"
+        else: message, "Bad character", /noname
     
     endcase
     

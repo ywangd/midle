@@ -7,6 +7,7 @@
 
 function FuncCallNode::eval, env
     compile_opt logical_predicate
+    @ast_error_handler
 
     func = self.operands[0]
     p = (self.operands[1]).eval(env, k=k)
@@ -29,7 +30,7 @@ function FuncCallNode::eval, env
                     7: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6])
                     8: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7])
                     9: return, nk ? call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], _extra=k) : call_function('obj_new', funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8])
-                    else: self.error, 'Too many positional arguments'
+                    else: message, 'Too many positional arguments', /noname
                 endcase
             endif else message, /reissue_last
         endif
@@ -44,7 +45,7 @@ function FuncCallNode::eval, env
             7: return, nk ? call_function(funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], _extra=k) : call_function(funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6])
             8: return, nk ? call_function(funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], _extra=k) : call_function(funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7])
             9: return, nk ? call_function(funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], _extra=k) : call_function(funcname, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8])
-            else: self.error, 'Too many positional arguments'
+            else: message, 'Too many positional arguments', /noname
         endcase
         
     endif else if isa(func, 'MemberNode') then begin
@@ -60,10 +61,10 @@ function FuncCallNode::eval, env
             7: return, nk ? call_method(member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], _extra=k) : call_method(member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6])
             8: return, nk ? call_method(member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], _extra=k) : call_method(member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7])
             9: return, nk ? call_method(member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], _extra=k) : call_method(member, objref, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8])
-            else: self.error, 'Too many positional arguments'
+            else: message, 'Too many positional arguments', /noname
         endcase
     endif else begin
-        self.error, 'Invalid function call'
+        message, 'Invalid function call', /noname
     endelse
 
 end

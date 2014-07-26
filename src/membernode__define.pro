@@ -5,17 +5,12 @@
 ;   Yang Wang (ywangd@gmail.com)
 ;-
 
-function MemberNode::eval_lhs, env, member=member
-    host = self.operands[0]
-    member = self.operands[1]
-    return, host
-end
-
-
 function MemberNode::eval, env, member=member, lexeme=lexeme
+    @ast_error_handler
+
     host = (self.operands[0]).eval(env)
 
-    if ~isa(host, 'Objref') && ~isa(host, 'Struct') then self.error, 'Incorrect data type for member access'
+    if ~isa(host, 'Objref') && ~isa(host, 'Struct') then message, 'Incorrect data type for member access', /noname
 
     indexingStruct = 0
     member = self.operands[1]
@@ -25,7 +20,7 @@ function MemberNode::eval, env, member=member, lexeme=lexeme
         member = member.eval(env)
         indexingStruct = 1
     endif else begin
-        self.error, 'Invalid object property'
+        message, 'Invalid object property', /noname
     endelse
 
     if keyword_set(lexeme) then begin
@@ -44,13 +39,13 @@ function MemberNode::eval, env, member=member, lexeme=lexeme
                 if count gt 0 then begin
                     return, host.(idx[0])
                 endif else begin
-                    self.error, 'Field does not exist: ' + member
+                    message, 'Field does not exist: ' + member, /noname
                 endelse
             endelse
 
         endif else begin
             ; Impossible to get a property by a string as its name?
-            self.error, 'Property access is not supported for class type ' + typename(host)
+            message, 'Property access is not supported for class type ' + typename(host), /noname
         endelse
 
     endelse

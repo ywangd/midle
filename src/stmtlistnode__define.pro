@@ -8,6 +8,8 @@
 ;-
 
 function StmtListNode::eval, env
+    @ast_error_handler
+
     ret = !NULL
     foreach node, self.operands, ii do ret = node.eval(env)
     return, ret

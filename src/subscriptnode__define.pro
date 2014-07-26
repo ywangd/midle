@@ -5,16 +5,9 @@
 ;   Yang Wang (ywangd@gmail.com)
 ;-
 
-function SubscriptNode::eval_lhs, env, subs=subs, list_of_indexnode=list_of_indexnode
-    host = self.operands[0]
-    subs = self.operands[1] ; the IdxlistNode
-    list_of_indexnode = subs.operands ; [IndexNode, ...]
-    return, host
-end
-
-
 function SubscriptNode::eval, env
     compile_opt logical_predicate
+    @ast_error_handler
     
     collection = (self.operands[0]).eval(env)
     subs =  self.operands[1] ; the IdxlistNode

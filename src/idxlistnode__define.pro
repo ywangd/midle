@@ -6,13 +6,14 @@
 ;-
 
 function IdxlistNode::eval, env, fromIndex=fromIndex, toIndex=toIndex, isRanges=isRanges
+    @ast_error_handler
     
     nd = self.operands.count()
     
     if n_elements(fromIndex) eq 0 then fromIndex = 0
     if n_elements(toIndex) eq 0 then toIndex = nd - 1
     
-    if fromIndex gt toIndex || (toIndex - fromIndex) ge 8 then self.error, 'Invalid number of dimensions'
+    if fromIndex gt toIndex || (toIndex - fromIndex) ge 8 then message, 'Invalid number of dimensions', /noname
         
     isRanges = []
     idxlist = list()

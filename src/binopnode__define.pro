@@ -6,6 +6,8 @@
 ;-
 
 function BinOpNode::eval, env
+    @ast_error_handler
+
     TOKEN = self.lexer.TOKEN
     val1 = self.operands[0].eval(env)
     val2 = self.operands[1].eval(env)
@@ -31,7 +33,7 @@ function BinOpNode::eval, env
         TOKEN.T_GT: val = val1 gt val2
         TOKEN.T_LE: val = val1 le val2
         TOKEN.T_LT: val = val1 lt val2
-        else: self.error, 'Unrecognized operator'
+        else: message, 'Unrecognized operator', /noname
     endcase
     return, val
 end
