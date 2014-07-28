@@ -185,6 +185,16 @@ print, midle('indgen(10)[0:*:2]')
 print, midle('list(indgen(3,4,5,6)[*,0:3:2,4,*][2,*,0,0:5:2], /extract).count()')
 ```
 
+Subscripts and dot notations can be chained for the left-hand-side variable of
+assignment statements as well. This allows direct assignment to list items
+where the list itself is inside an array:
+```IDL
+midle, 'b = [(1,2,3), (4,5,6), h{}, (7,8,9)]', env
+midle, 'b[1][1] = 42', env
+midle, 'b[2]["st"] = {x: indgen(3,4,5), y: 42, z: indgen(3,5)}', env
+midle, 'b[2]["st"].x[1,2,3] = 99', env
+```
+
 The `ast` output keyword can be used to obtain the Abstract Syntax Tree object
 of the given statements/expressions.
 ```IDL
@@ -305,7 +315,7 @@ method call and subscript, an extra pair of parenthesis has to be used like
 `(h.where(3))[0]`. Now let's try `h.where(3).count()`. Apparently it is illegal
 in IDL. However even after adding extra pair of parenthesis,
 `(h.where(3)).count()`, the expression is still invalid (error message is
-`Subscripts are not allowed with object properties`). 
+`Subscripts are not allowed with object properties`).
 
 With MIDLE, it is legal to write chaining calls and subscripts without the
 eye-irritating parenthesis. It is more in line with other modern languages like

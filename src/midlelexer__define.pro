@@ -90,8 +90,8 @@ end
 
 pro MidleLexer::showError, msg
     print
-    print, !error_state.msg_prefix, ' [SyntaxError] ', msg
-    print, !error_state.msg_prefix, ' Line ', strtrim(self.lineno+1,2) + ', Col ', strtrim(self.lookahead_pos,2)
+    print, !error_state.msg_prefix, '[SyntaxError] ', msg
+    print, !error_state.msg_prefix, 'Line ', strtrim(self.lineno+1,2) + ', Col ', strtrim(self.lookahead_pos,2)
     print, self.getLine(self.lineno)
     leadingSpace = ''
     if self.lookahead_pos-1 gt 0 then leadingSpace = strjoin(replicate(' ', self.lookahead_pos-1))
@@ -312,7 +312,7 @@ function MidleLexer::getToken
                             self.nextc
                             return, self.TOKEN.T_UINT
                         endif else begin
-                            return, self.TOKEN.T_UINT
+                            return, self.TOKEN.T_UINT_AUTO
                         endelse
                     end
     
@@ -344,7 +344,7 @@ function MidleLexer::getToken
                     isDigit(self.char): self.nextc  ; multi-digits number
     
                     else: begin
-                        return, self.TOKEN.T_INT
+                        return, self.TOKEN.T_INT_AUTO
                     end
     
                 endcase ; end case char

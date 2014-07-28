@@ -15,7 +15,9 @@ function getTokenCodes
     TOKEN.T_NULL = 256
     TOKEN.T_BYTE = 257
     TOKEN.T_INT =  258
+    TOKEN.T_INT_AUTO = 267 ; auto-promoting integer
     TOKEN.T_UINT = 259
+    TOKEN.T_UINT_AUTO = 268 ; auto-promoting unsigned integer
     TOKEN.T_LONG = 260
     TOKEN.T_ULONG = 261
     TOKEN.T_LONG64 = 262

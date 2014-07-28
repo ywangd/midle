@@ -33,6 +33,17 @@
 function midle, _lines_or_file, _env, file=file, ast=ast, error=error
     compile_opt logical_predicate
     
+    error = !NULL
+    catch, theError
+    if theError ne 0 then begin
+        catch, /cancel
+        error = !error_state.msg
+        if ~(!error_state.name eq 'IDL_M_USER_ERR' && strmid(!error_state.msg,0,6) eq 'MIDLE_') then begin
+            print, !error_state.msg_prefix, '[Error] ', !error_state.msg
+        endif
+        return, !NULL
+    endif
+    
     if keyword_set(file) then lines = midleRead(_lines_or_file) else lines = _lines_or_file
 
     if n_elements(_env) eq 0 then begin
@@ -45,21 +56,9 @@ function midle, _lines_or_file, _env, file=file, ast=ast, error=error
             foreach v, _env, k do env[k] = v
         endif else env = _env
     endif else begin
-        message, 'Runtime environment must be either a Hash or Struct'
+        message, 'The Runtime Environment Variable must be either a Hash or Struct', /noname
     endelse
     
-    error = !NULL
-    catch, theError
-    if theError ne 0 then begin
-        catch, /cancel
-        if !error_state.name eq 'IDL_M_USER_ERR' && strmid(!error_state.msg,0,6) eq 'MIDLE_' then begin
-            error = !error_state.msg
-            return, !NULL
-        endif else begin
-            message, /reissue_last
-        endelse
-        
-    endif
     ast = parse(lines)
     res = ast.eval(env)
 
@@ -86,10 +85,9 @@ end
 ;-
 pro main
     
-    midle, 'a = h{"x": (1,2), "y": "Hello World"}', env
-    msg = strjoin(string(env, /implied_print))
+    midle, 'a = h{"x": (1,42), "y": "Hello World"}', env
     
-    ok = dialog_message(msg)
+    ok = dialog_message(string(env, /print))
 
 end
 

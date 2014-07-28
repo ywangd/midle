@@ -241,7 +241,7 @@ function MidleParser::parse_atom
         node = IdentNode(self.lexer, self.lexeme)
         self.getToken
 
-    endif else if (typeCode = self.numberCode(self.tag)) ne -1 then begin
+    endif else if (typeCode = self.numberCode(self.tag)) ne !NULL then begin
         node = NumberNode(self.lexer, self.lexeme, typeCode)
         self.getToken
 
@@ -417,8 +417,8 @@ end
 
 pro MidleParser::showError, msg
     print
-    print, !error_state.msg_prefix, ' [SyntaxError] ', msg
-    print, !error_state.msg_prefix, ' Line ', strtrim(self.lexer.lineno+1,2) + ', Col ', strtrim(self.lexer.start_pos+1,2)
+    print, !error_state.msg_prefix, '[SyntaxError] ', msg
+    print, !error_state.msg_prefix, 'Line ', strtrim(self.lexer.lineno+1,2) + ', Col ', strtrim(self.lexer.start_pos+1,2)
     print, self.lexer.getLine(self.lexer.lineno)
     leadingSpace = ''
     if self.lexer.start_pos gt 0 then leadingSpace = strjoin(replicate(' ', self.lexer.start_pos))
@@ -430,14 +430,16 @@ function MidleParser::numberCode, tag
     case tag of
         self.TOKEN.T_BYTE: typeCode = 1
         self.TOKEN.T_INT: typeCode = 2
+        self.TOKEN.T_INT_AUTO: typeCode = -2
         self.TOKEN.T_UINT: typeCode = 12
+        self.TOKEN.T_UINT_AUTO: typeCode = -12
         self.TOKEN.T_LONG: typeCode = 3
         self.TOKEN.T_ULONG: typeCode = 13
         self.TOKEN.T_LONG64: typeCode = 14
         self.TOKEN.T_ULONG64: typeCode = 15
         self.TOKEN.T_FLOAT: typeCode = 4
         self.TOKEN.T_DOUBLE: typeCode = 5
-        else: typeCode = -1
+        else: typeCode = !NULL
     endcase
     return, typeCode
 end

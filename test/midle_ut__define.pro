@@ -29,6 +29,12 @@ function Midle_ut::test_datatypes
     assert, isa(midle('42.D3'), 'DOUBLE'), 'DOUBLE scientific'
     assert, isa(midle('.42D+3'), 'DOUBLE'), 'DOUBLE scientific +'
     assert, isa(midle('42.D-3'), 'DOUBLE'), 'DOUBLE scientific -'
+    
+    assert, isa(midle('32768'), 'LONG'), 'Auto promoting to LONG'
+    assert, isa(midle('2147483648'), 'LONG64'), 'Auto promoting to LONG64'
+    
+    assert, isa(midle('65536u'), 'ULONG'), 'Auto promoting to ULONG'
+    assert, isa(midle('4294967296u'), 'ULONG64'), 'Auto promoting to ULONG64'
 
     assert, isa(midle('"Hello"'), 'STRING'), 'STRING'
     assert, isa(midle('!NULL'), 'UNDEFINED'), 'UNDEFINED'
