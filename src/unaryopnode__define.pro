@@ -25,8 +25,8 @@ function UnaryOpNode::print_helper
         format='(A, " ''",A,"''")')
 end
 
-function UnaryOpNode::init, start_pos, operator, node
-    if ~self->AstNode::init(start_pos) then return, 0
+function UnaryOpNode::init, lexer, operator, node
+    if ~self->AstNode::init(lexer) then return, 0
     self.operator = operator
     self.operands.add, node
     return, 1

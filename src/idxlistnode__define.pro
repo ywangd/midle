@@ -31,8 +31,8 @@ function IdxlistNode::print_helper
 end
 
 
-function IdxlistNode::init, start_pos
-    if ~self->AstNode::init(start_pos) then return, 0
+function IdxlistNode::init, lexer
+    if ~self->AstNode::init(lexer) then return, 0
     return, 1
 end
 

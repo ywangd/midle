@@ -57,8 +57,8 @@ function ProcCallNode::print_helper
 end
 
 
-function ProcCallNode::init, start_pos, proc, arglist
-    if ~self->AstNode::init(start_pos) then return, 0
+function ProcCallNode::init, lexer, proc, arglist
+    if ~self->AstNode::init(lexer) then return, 0
     self.operands.add, proc
     self.operands.add, arglist
     return, 1

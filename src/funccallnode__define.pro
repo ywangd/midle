@@ -75,8 +75,8 @@ function FuncCallNode::print_helper
 end
 
 
-function FuncCallNode::init, start_pos, func, arglist
-    if ~self->AstNode::init(start_pos) then return, 0
+function FuncCallNode::init, lexer, func, arglist
+    if ~self->AstNode::init(lexer) then return, 0
     self.operands.add, func
     self.operands.add, arglist
     return, 1

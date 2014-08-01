@@ -46,8 +46,8 @@ function ListNode::print_helper
 end
 
 
-function ListNode::init, start_pos, operator, node
-    if ~self->AstNode::init(start_pos) then return, 0
+function ListNode::init, lexer, operator, node
+    if ~self->AstNode::init(lexer) then return, 0
     self.operator = operator
     if n_elements(node) ne 0 then self.operands.add, node
     return, 1

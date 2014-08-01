@@ -19,8 +19,8 @@ function StmtListNode::print_helper
     return, self.name()
 end
 
-function StmtListNode::init, start_pos
-    if ~self->AstNode::init(start_pos) then return, 0
+function StmtListNode::init, lexer
+    if ~self->AstNode::init(lexer) then return, 0
     return, 1
 end
 

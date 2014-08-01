@@ -52,8 +52,8 @@ function SysvarNode::print_helper
 end
 
 
-function SysvarNode::init, start_pos, lexeme
-    if ~self->AstNode::init(start_pos) then return, 0
+function SysvarNode::init, lexer, lexeme
+    if ~self->AstNode::init(lexer) then return, 0
     self.lexeme = lexeme
     return, 1
 end

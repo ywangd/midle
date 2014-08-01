@@ -58,8 +58,8 @@ function MemberNode::print_helper
 end
 
 
-function MemberNode::init, start_pos, host, member
-    if ~self->AstNode::init(start_pos) then return, 0
+function MemberNode::init, lexer, host, member
+    if ~self->AstNode::init(lexer) then return, 0
     self.operands.add, host
     self.operands.add, member
     return, 1

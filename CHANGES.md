@@ -1,5 +1,9 @@
 # MIDLE Changelog
 
+## Version 0.2.1 2014-08-01
+* **Bug Fix**: A dangling variable can also be a procedure call with no
+  arguments in addition to be just a variable.
+
 ## Version 0.2.0 2014-07-28
 * **New Feature**: Subscripts and dot notations can now also be chained for the
   left-hand-side variable of assignments. This allows direct assignment to an

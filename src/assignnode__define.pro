@@ -114,8 +114,8 @@ function AssignNode::print_helper
     return, self.name()
 end
 
-function AssignNode::init, start_pos, lhs, rhs
-    if ~self->AstNode::init(start_pos) then return, 0
+function AssignNode::init, lexer, lhs, rhs
+    if ~self->AstNode::init(lexer) then return, 0
     self.operands.add, lhs
     self.operands.add, rhs
     return, 1

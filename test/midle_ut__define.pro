@@ -7,9 +7,11 @@
 ; 	Yang Wang (ywangd@gmail.com)
 ;-
 
-
 function array_equal_exact, a1, a2
     return, array_equal(a1, a2) and (array_equal(size(a1), size(a2))) 
+end
+
+pro no_arg_pro
 end
 
 function Midle_ut::test_datatypes
@@ -316,6 +318,12 @@ function Midle_ut::test_file
     st = (env.h)['st']
     assert, st.x eq 42
     assert, st.y eq 22
+    
+    return, 1
+end
+
+function Midle_ut::test_misc
+    assert, midle('no_arg_pro') eq !NULL
     
     return, 1
 end

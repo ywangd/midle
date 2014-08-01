@@ -22,8 +22,8 @@ function KeyargNode::print_helper
 end
 
 
-function KeyargNode::init, start_pos, name, val
-    if ~self->AstNode::init(start_pos) then return, 0
+function KeyargNode::init, lexer, name, val
+    if ~self->AstNode::init(lexer) then return, 0
     self.operands.add, name
     self.operands.add, val
     return, 1

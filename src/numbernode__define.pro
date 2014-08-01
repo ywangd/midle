@@ -41,8 +41,8 @@ function NumberNode::print_helper
     return, string(self.name(), self.lexeme, format='(A, " ''",A,"''")')
 end
 
-function NumberNode::init, start_pos, lexeme, typeCode
-    if ~self->AstNode::init(start_pos) then return, 0
+function NumberNode::init, lexer, lexeme, typeCode
+    if ~self->AstNode::init(lexer) then return, 0
     self.lexeme = lexeme
     self.typeCode = typeCode
     return, 1

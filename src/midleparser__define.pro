@@ -404,6 +404,8 @@ function MidleParser::parse, lines
                 message, 'Bad character: ' + strmid(self.lexer.buffer, self.lexer.start_pos, 1), /noname
             endif
             
+            ; A dangling identifier could be either a proc call or a variable
+            if isa(node, 'IdentNode') then node.try_proc = 1
             stmts.add, node
         endif
         ; always advance to the next unprocessed token before next loop

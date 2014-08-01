@@ -19,8 +19,8 @@ function TerneryOpNode::print_helper
     return, string(self.name(), format='(A, " ''? :''")')
 end
 
-function TerneryOpNode::init, start_pos, node_predicate, node_true, node_false
-    if ~self->AstNode::init(start_pos) then return, 0
+function TerneryOpNode::init, lexer, node_predicate, node_true, node_false
+    if ~self->AstNode::init(lexer) then return, 0
     self.operands.add, node_predicate
     self.operands.add, node_true
     self.operands.add, node_false

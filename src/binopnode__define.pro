@@ -45,8 +45,8 @@ function BinOpNode::print_helper
 end
 
 
-function BinOpNode::init, start_pos, operator, lnode, rnode
-    if ~self->AstNode::init(start_pos) then return, 0
+function BinOpNode::init, lexer, operator, lnode, rnode
+    if ~self->AstNode::init(lexer) then return, 0
     self.operator = operator
     self.operands.add, lnode
     self.operands.add, rnode

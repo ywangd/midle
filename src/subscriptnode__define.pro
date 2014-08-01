@@ -50,8 +50,8 @@ function SubscriptNode::print_helper
 end
 
 
-function SubscriptNode::init, start_pos, collection, idxlist
-    if ~self->AstNode::init(start_pos) then return, 0
+function SubscriptNode::init, lexer, collection, idxlist
+    if ~self->AstNode::init(lexer) then return, 0
     self.operands.add, collection
     self.operands.add, idxlist
     return, 1
