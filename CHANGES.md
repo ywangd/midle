@@ -1,5 +1,9 @@
 # MIDLE Changelog
 
+## Version 0.3.0 2014-08-04
+* **New Feature**: A demo GUI is added to showcase how MIDLE can be used in IDL
+  Virtual Machine.
+
 ## Version 0.2.0 2014-07-28
 * **New Feature**: Subscripts and dot notations can now also be chained for the
   left-hand-side variable of assignments. This allows direct assignment to an
