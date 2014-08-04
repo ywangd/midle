@@ -79,17 +79,4 @@ pro midle, _lines_or_file, _env, file=file, ast=ast, error=error
 end
 
 
-;+
-; :Description:
-;    Entry routine of Virtual Machine Application. Only for testing purpose.
-;-
-pro main
-    
-    midle, 'a = h{"x": (1,42), "y": "Hello World"}', env
-    
-    ok = dialog_message(string(env, /print))
-
-end
-
-
 

@@ -1,6 +1,8 @@
 # MIDLE Changelog
 
-## Version 0.2.1 2014-08-01
+## Version 0.3.0 2014-08-04
+* **New Feature**: A demo GUI is added to showcase how MIDLE can be used in IDL
+  Virtual Machine.
 * **Bug Fix**: A dangling variable can also be a procedure call with no
   arguments in addition to be just a variable.
 
