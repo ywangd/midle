@@ -17,15 +17,18 @@ Features](#missing-features) section for details.
 MIDLE requires IDL 8.0 or up (8.3 is recommended).
 
 ## Motivation
-A file containing a list of IDL assignment statements is a good candidate as an
-input or a configuration file to IDL packages. This, however, indicates
-`EXECUTE` has to be used to process the file, which is not ideal due to the fact
-that `EXECUTE` cannot run in IDL virtual machines.
+The original motivation came from the wish to use a file containing a list of
+IDL assignments as a configuration/input file to IDL packages. This, however,
+indicates `EXECUTE` has to be used to process the file, which is not ideal due
+to the fact that the IDL virtual machine does not allow `EXECUTE`.
 
 MIDLE is designed to fill the gap. It initially focused only on the
 right-hand-side of the `=` sign, i.e. the expression and was later decided to
-support full assignment statements as well as procedure calls. It now has a much
-broader scope than what it was originated from.
+support full assignment statements as well as procedure calls. It now has a
+broader scope than what it was originated from. 
+It is even possible to use MIDLE as a simple scripting engine to GUI
+applications running in IDL virtual machine and expose some powers of the
+underlying IDL language to end users who do not own IDL licenses.
 
 It is also worth to note that MIDLE is not envisioned to be fast or memory
 efficient (at least not now). For situations where `EXECUTE` is needed, you
@@ -238,6 +241,9 @@ print, midle('42 + a', error=error)  ; varaible a is undefined
 ```
 The content of `error` is now `MIDLE_RUNTIME_ERR - Undefined variable: a`.
 
+A demo GUI application is also available to showcase how MIDLE can run
+interactively in IDL virtual machine. The entry routine of the GUI application
+is named **MAIN**, which runs automatically in IDL virtual machine. 
 
 ## <a name="missing-features"></a>Missing Features
 The missing features fall into two broad categories. The first category is *By
