@@ -369,26 +369,28 @@ function MidleParser::parse_ternary_expr
 end
 
 
-; At the end of each parse function, self.tag always points to the next
-; un-processed token.
-function MidleParser::parse, lines
-    catch, theError
-    if theError ne 0 then begin
-        catch, /cancel
-        self.showError, !error_state.msg
-        message, 'MIDLE_PARSER_ERR - ' + !error_state.msg, /noprint, /noname, /noprefix
-    endif
-
-    self.lexer.feed, lines
+function MidleParser::parse_stmt
+    ; stmt : expr_stmt | proc_call | assign_stmt | if_stmt | for_stmt | foreach_stmt | break_stmt | continue_stmt 
+    ; expr_stmt : ternary_expr EOL
     
-    ; The statement list
-    stmts = StmtListNode(self.lexer)
-    ;
-    self.getToken ; Read the first token
-    ; Parse till the end of file is reached
-    while self.tag ne self.TOKEN.T_EOF do begin
-        if self.tag ne self.TOKEN.T_EOL then begin
+    case (self.tag) of
+        self.TOKEN.T_IF: begin
 
+        end
+        
+        self.TOKEN.T_FOR: begin
+        end
+        
+        self.TOKEN.T_FOREACH: begin
+        end
+        
+        self.TOKEN.T_BREAK: begin
+        end
+        
+        self.TOKEN.T_CONTINUE: begin
+        end
+        
+        else: begin
             node = self.parse_ternary_expr()
 
             if self.tag eq self.TOKEN.T_COMMA then begin
@@ -400,20 +402,51 @@ function MidleParser::parse, lines
                 node = AssignNode(self.lexer, node, self.parse_ternary_expr())
             endif
 
-            if self.tag ne self.TOKEN.T_EOL then begin
-                message, 'Bad character: ' + strmid(self.lexer.buffer, self.lexer.start_pos, 1), /noname
-            endif
-            
             ; A dangling identifier could be either a proc call or a variable
             if isa(node, 'IdentNode') then node.try_proc = 1
-            stmts.add, node
-        endif
-        ; always advance to the next unprocessed token before next loop
-        self.getToken
+        end
+    endcase
+    
+    ; An EOL is required to end a statement
+    self.matchToken, self.TOKEN.T_EOL
+    
+    return, node
+    
+end
+
+
+; At the end of each parse function, self.tag always points to the next
+; un-processed token.
+function MidleParser::parse, lines
+    ; stmt_list : (stmt)*
+    
+    catch, theError
+    if theError ne 0 then begin
+        catch, /cancel
+        self.showError, !error_state.msg
+        message, 'MIDLE_PARSER_ERR - ' + !error_state.msg, /noprint, /noname, /noprefix
+    endif
+
+    self.lexer.feed, lines
+    
+    ; The statement list
+    stmt_list = StmtListNode(self.lexer)
+    ;
+    self.getToken ; Read the first token
+    ; Parse till the end of file is reached
+    while self.tag ne self.TOKEN.T_EOF do begin
+        if self.tag ne self.TOKEN.T_EOL then begin ; ignore empty lines
+            
+            node = self.parse_stmt()
+            stmt_list.add, node
+            
+        endif else begin
+            self.matchToken, self.TOKEN.T_EOL
+        endelse
 
     endwhile
 
-    return, stmts
+    return, stmt_list
 end
 
 

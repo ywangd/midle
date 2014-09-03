@@ -66,5 +66,19 @@ function getTokenCodes
     TOKEN.T_IDENT = 401
     TOKEN.T_SYSV = 411
     
+    TOKEN.T_IF = 501
+    TOKEN.T_ELSE = 502
+    TOKEN.T_THEN = 503
+    TOKEN.T_BEGIN = 504
+    TOKEN.T_FOR = 505
+    TOKEN.T_FOREACH = 506
+    TOKEN.T_DO = 507
+    TOKEN.T_BREAK = 508
+    TOKEN.T_CONTINUE = 509
+    TOKEN.T_END = 551
+    TOKEN.T_ENDIF = 552
+    TOKEN.T_ENDFOR = 553
+    TOKEN.T_ENDFOREACH = 554
+    
     return, TOKEN
 end

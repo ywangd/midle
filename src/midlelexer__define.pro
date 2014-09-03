@@ -482,6 +482,20 @@ function MidleLexer::init, lines
     self.keywords['GT'] = self.TOKEN.T_GT
     self.keywords['LE'] = self.TOKEN.T_LE
     self.keywords['LT'] = self.TOKEN.T_LT
+    
+    self.keywords['IF'] = self.TOKEN.T_IF
+    self.keywords['ELSE'] = self.TOKEN.T_ELSE
+    self.keywords['THEN'] = self.TOKEN.T_THEN
+    self.keywords['BEGIN'] = self.TOKEN.T_BEGIN
+    self.keywords['FOR'] = self.TOKEN.T_FOR
+    self.keywords['FOREACH'] = self.TOKEN.T_FOREACH
+    self.keywords['DO'] = self.TOKEN.T_DO
+    self.keywords['BREAK'] = self.TOKEN.T_BREAK
+    self.keywords['CONTINUE'] = self.TOKEN.T_CONTINUE
+    self.keywords['END'] = self.TOKEN.T_END
+    self.keywords['ENDIF'] = self.TOKEN.T_ENDIF
+    self.keywords['ENDFOR'] = self.TOKEN.T_ENDFOR
+    self.keywords['ENDFOREACH'] = self.TOKEN.T_ENDFOREACH
 
     return, 1
 end
