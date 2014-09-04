@@ -368,13 +368,39 @@ function MidleParser::parse_ternary_expr
     return, node
 end
 
+function MidleParser::parse_body, end_label
+    ; body: 'BEGIN' stmt_list 'ENDXXX' | stmt
+    if self.tag eq self.TOKEN.T_BEGIN then begin
+        self.matchToken, self.TOKEN.T_BEGIN
+        self.matchToken, self.TOKEN.T_EOL
+        node = self.parse_stmt_list(end_label)
+        self.matchToken, end_label
+    endif else begin
+        node = self.parse_stmt()
+    endelse
+    
+    return, node
+end
+
 
 function MidleParser::parse_stmt
-    ; stmt : expr_stmt | proc_call | assign_stmt | if_stmt | for_stmt | foreach_stmt | break_stmt | continue_stmt 
-    ; expr_stmt : ternary_expr EOL
+    ; stmt : ternary_expr | proc_call | assign_stmt | if_stmt | for_stmt | foreach_stmt | break_stmt | continue_stmt 
+    ; if_stmt: 'IF' ternary_expr 'THEN' body
     
     case (self.tag) of
         self.TOKEN.T_IF: begin
+            self.matchToken, self.TOKEN.T_IF
+            
+            node_predicate = self.parse_ternary_expr()
+            self.matchToken, self.TOKEN.T_THEN
+            node_then = self.parse_body(self.TOKEN.T_ENDIF)
+            
+            if self.tag eq self.TOKEN.T_ELSE then begin
+                self.matchToken, self.TOKEN.T_ELSE
+                node_else = self.parse_body(self.TOKEN.T_ENDELSE)
+            endif else node_else = !NULL
+            
+            node = IfNode(self.lexer, node_predicate, node_then, node_else)
 
         end
         
@@ -404,21 +430,42 @@ function MidleParser::parse_stmt
 
             ; A dangling identifier could be either a proc call or a variable
             if isa(node, 'IdentNode') then node.try_proc = 1
+            
         end
     endcase
-    
-    ; An EOL is required to end a statement
-    self.matchToken, self.TOKEN.T_EOL
     
     return, node
     
 end
 
 
+function MidleParser::parse_stmt_list, end_label
+    ; stmt_list : (stmt EOL)* (EOF | ENDXXX)
+    
+    if n_elements(end_label) eq 0 then end_label = self.TOKEN.T_EOF
+    
+    stmt_list = StmtListNode(self.lexer)
+    ; Parse till the end of file is reached
+    while self.tag ne end_label do begin
+        
+        if self.tag ne self.TOKEN.T_EOL then begin ; ignore empty lines
+            node = self.parse_stmt()
+            stmt_list.add, node
+        endif
+        
+        ; An EOL is required to end a statement or an empty line
+        self.matchToken, self.TOKEN.T_EOL
+
+    endwhile
+
+    return, stmt_list
+end
+
+
+
 ; At the end of each parse function, self.tag always points to the next
 ; un-processed token.
 function MidleParser::parse, lines
-    ; stmt_list : (stmt)*
     
     catch, theError
     if theError ne 0 then begin
@@ -429,24 +476,10 @@ function MidleParser::parse, lines
 
     self.lexer.feed, lines
     
-    ; The statement list
-    stmt_list = StmtListNode(self.lexer)
-    ;
     self.getToken ; Read the first token
-    ; Parse till the end of file is reached
-    while self.tag ne self.TOKEN.T_EOF do begin
-        if self.tag ne self.TOKEN.T_EOL then begin ; ignore empty lines
-            
-            node = self.parse_stmt()
-            stmt_list.add, node
-            
-        endif else begin
-            self.matchToken, self.TOKEN.T_EOL
-        endelse
+    
+    return, self.parse_stmt_list()
 
-    endwhile
-
-    return, stmt_list
 end
 
 

@@ -494,6 +494,7 @@ function MidleLexer::init, lines
     self.keywords['CONTINUE'] = self.TOKEN.T_CONTINUE
     self.keywords['END'] = self.TOKEN.T_END
     self.keywords['ENDIF'] = self.TOKEN.T_ENDIF
+    self.keywords['ENDELSE'] = self.TOKEN.T_ENDELSE
     self.keywords['ENDFOR'] = self.TOKEN.T_ENDFOR
     self.keywords['ENDFOREACH'] = self.TOKEN.T_ENDFOREACH
 

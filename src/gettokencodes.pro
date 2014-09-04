@@ -77,8 +77,9 @@ function getTokenCodes
     TOKEN.T_CONTINUE = 509
     TOKEN.T_END = 551
     TOKEN.T_ENDIF = 552
-    TOKEN.T_ENDFOR = 553
-    TOKEN.T_ENDFOREACH = 554
+    TOKEN.T_ENDELSE = 553
+    TOKEN.T_ENDFOR = 554
+    TOKEN.T_ENDFOREACH = 555
     
     return, TOKEN
 end

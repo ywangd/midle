@@ -328,6 +328,56 @@ function Midle_ut::test_misc
     return, 1
 end
 
+function Midle_ut::test_if
+    env = Dict()
+    env.a = 1
+    midle, 'if a eq 1 then x = 1 else x = -1', env
+    assert, env.x eq 1
+    midle, 'if a lt 0 then y = 1 else y = -1', env
+    assert, env.y eq -1
+    
+    midle, 'if a eq 1 then begin & x = 10 & y = 20 & endif & z = 1', env
+    assert, env.x eq 10
+    assert, env.y eq 20
+    assert, env.z eq 1
+    
+    midle, 'if a eq 1 then if x eq 10 then t = 100 else t = 200', env
+    assert, env.t eq 100 
+    
+    midle, 'if a eq 1 then if x eq -10 then t = 100 else t = 200', env
+    assert, env.t eq 200
+    
+    code = 'if a eq 1 then begin' + string(10b) $
+        +  '   x = 101' + string(10b) $
+        +  '   y = 102' + string(10b) $
+        +  '   z = 103' + string(10b) $
+        +  'endif else begin' + string(10b) $
+        +  '   x = -101' + string(10b) $
+        +  '   y = -102' + string(10b) $
+        +  '   z = -103' + string(10b) $
+        +  'endelse'
+     midle, code, env
+     assert, env.x eq 101
+     assert, env.y eq 102
+     assert, env.z eq 103
+     
+     code = 'if a ne 1 then begin' + string(10b) $
+         +  '   x = 101' + string(10b) $
+         +  '   y = 102' + string(10b) $
+         +  '   z = 103' + string(10b) $
+         +  'endif else begin' + string(10b) $
+         +  '   x = -101' + string(10b) $
+         +  '   y = -102' + string(10b) $
+         +  '   z = -103' + string(10b) $
+         +  'endelse'
+     midle, code, env
+     assert, env.x eq -101
+     assert, env.y eq -102
+     assert, env.z eq -103
+
+    return, 1
+end
+
 
 pro Midle_ut__define, class
     class = { Midle_ut, inherits MGutTestCase }
