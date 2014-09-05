@@ -24,7 +24,7 @@ function MidleParser::parse_argument
         endelse
     endif else begin
         node = self.parse_ternary_expr()
-        if self.tag eq self.token.t_assign then begin
+        if self.tag eq self.TOKEN.T_ASSIGN then begin
             if ~isa(node, 'IdentNode') then message, 'Identifier expected for keyword argument', /noname
             self.matchToken, self.tag
             node = KeyargNode(self.lexer, node, self.parse_ternary_expr())
@@ -374,7 +374,6 @@ function MidleParser::parse_body, end_label
         self.matchToken, self.TOKEN.T_BEGIN
         self.matchToken, self.TOKEN.T_EOL
         node = self.parse_stmt_list(end_label)
-        self.matchToken, end_label
     endif else begin
         node = self.parse_stmt()
     endelse
@@ -405,15 +404,60 @@ function MidleParser::parse_stmt
         end
         
         self.TOKEN.T_FOR: begin
+            self.matchToken, self.TOKEN.T_FOR
+            if self.tag eq self.TOKEN.T_IDENT then begin
+                node_loopvar = IdentNode(self.lexer, self.lexeme)
+                self.matchToken, self.TOKEN.T_IDENT
+            endif else begin
+                message, 'Identifier expected for loop variable', /noname
+            endelse
+            self.matchToken, self.TOKEN.T_ASSIGN
+            node_start = self.parse_ternary_expr()
+            self.matchToken, self.TOKEN.T_COMMA
+            node_end = self.parse_ternary_expr()
+            if self.tag eq self.TOKEN.T_COMMA then begin
+                self.matchToken, self.TOKEN.T_COMMA
+                node_step = self.parse_ternary_expr()
+            endif else node_step = NumberNode(self.lexer, '1', 2)
+            self.matchToken, self.TOKEN.T_DO
+            node_loopbody = self.parse_body(self.TOKEN.T_ENDFOR)
+            node = ForNode(self.lexer, node_loopvar, node_start, node_end, node_step, node_loopbody)
         end
         
         self.TOKEN.T_FOREACH: begin
+            self.matchToken, self.TOKEN.T_FOREACH
+            if self.tag eq self.TOKEN.T_IDENT then begin
+                node_loopvar = IdentNode(self.lexer, self.lexeme)
+                self.matchToken, self.TOKEN.T_IDENT
+            endif else begin
+                message, 'Identifier expected for loop variable', /noname
+            endelse
+            self.matchToken, self.TOKEN.T_COMMA
+            node_looplist = self.parse_ternary_expr()
+            if self.tag eq self.TOKEN.T_COMMA then begin
+                self.matchToken, self.TOKEN.T_COMMA
+                if self.tag eq self.TOKEN.T_IDENT then begin
+                    node_loopidx = IdentNode(self.lexer, self.lexeme)
+                    self.matchToken, self.TOKEN.T_IDENT
+                endif else begin
+                    message, 'Identifier expected for loop index', /noname
+                endelse
+            endif else node_loopidx = !NULL
+            self.matchToken, self.TOKEN.T_DO
+            node_loopbody = self.parse_body(self.TOKEN.T_ENDFOREACH)
+            node = ForeachNode(self.lexer, node_loopvar, node_looplist, node_loopidx, node_loopbody)
         end
         
         self.TOKEN.T_BREAK: begin
+            self.matchToken, self.TOKEN.T_BREAK
+            node = ControlNode(self.lexer, 'MIDLE_PC_BREAK')
+            if ~self.is_in_loop() then message, 'Cannot BREAK from the main level'
         end
         
         self.TOKEN.T_CONTINUE: begin
+            self.matchToken, self.TOKEN.T_CONTINUE
+            node = ControlNode(self.lexer, 'MIDLE_PC_CONTINUE')
+            if ~self.is_in_loop() then message, 'Cannot CONTINUE from the main level'
         end
         
         else: begin
@@ -446,7 +490,7 @@ function MidleParser::parse_stmt_list, end_label
     
     stmt_list = StmtListNode(self.lexer)
     ; Parse till the end of file is reached
-    while self.tag ne end_label do begin
+    while (self.tag ne end_label) && (self.tag ne self.TOKEN.T_END)  do begin
         
         if self.tag ne self.TOKEN.T_EOL then begin ; ignore empty lines
             node = self.parse_stmt()
@@ -457,6 +501,9 @@ function MidleParser::parse_stmt_list, end_label
         self.matchToken, self.TOKEN.T_EOL
 
     endwhile
+    
+    ; Consume the proper end label
+    self.matchToken, self.tag
 
     return, stmt_list
 end
@@ -466,6 +513,11 @@ end
 ; At the end of each parse function, self.tag always points to the next
 ; un-processed token.
 function MidleParser::parse, lines
+
+    define_msgblk, prefix='MIDLE_PC_', 'MIDLE_PROGRAM_CONTROL', $
+        ['BREAK', 'CONTINUE'], $
+        ['BREAK: %s', 'CONTINUE: %s'], $
+        /ignore_duplicate
     
     catch, theError
     if theError ne 0 then begin
@@ -478,8 +530,24 @@ function MidleParser::parse, lines
     
     self.getToken ; Read the first token
     
-    return, self.parse_stmt_list()
+    stmt_list = self.parse_stmt_list()
+    
+    if self.tag ne self.TOKEN.T_EOF then begin
+        self.matchToken, self.TOKEN.T_EOL
+        if self.tag ne self.TOKEN.T_EOF then message, 'Unreachable code'
+        self.matchToken, self.TOKEN.T_EOF
+    endif
+    
+    return, stmt_list
 
+end
+
+
+function MidleParser::is_in_loop
+    callstacks = scope_traceback(/structure)
+    callstacks = reverse(callstacks.routine)
+    foreach cs, callstacks do if cs eq 'MIDLEPARSER::PARSE_BODY' then return, 1
+    return, 0
 end
 
 

@@ -22,7 +22,7 @@ function IfNode::eval, env
 end
 
 function IfNode::print_helper
-    return, string(self.name(), format='(A, " ''IF''")')
+    return, self.name()
 end
 
 function IfNode::init, lexer, node_predicate, node_then, node_else

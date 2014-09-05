@@ -1,0 +1,15 @@
+
+catch, theError
+if theError ne 0 then begin
+    catch, /cancel
+
+    ; Pass program control signal
+    if !error_state.block eq 'MIDLE_PROGRAM_CONTROL' then begin
+        if !error_state.name eq 'MIDLE_PC_BREAK' then begin
+            break
+        endif else if !error_state.name eq 'MIDLE_PC_CONTINUE' then begin
+            continue
+        endif else message, 'Unknown program control signal - ' + !error_state.name
+
+    endif else message, /reissue_last
+endif

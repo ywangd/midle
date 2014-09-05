@@ -2,11 +2,16 @@
 catch, theError
 if theError ne 0 then begin
     catch, /cancel
-    ; Do not re-process any already processed error, just pass it along till it reach
-    ; the top level midle routine
-    if !error_state.name eq 'IDL_M_USER_ERR' $
+    
+    ; Pass program control signal
+    if !error_state.block eq 'MIDLE_PROGRAM_CONTROL' then begin
+    	message, /reissue_last
+    	
+    endif else if !error_state.name eq 'IDL_M_USER_ERR' $
         && strmid(!error_state.msg, 0, 17) eq 'MIDLE_RUNTIME_ERR' then begin
+        ; Do not re-process any already processed error, pass it to the top level midle routine
         message, /reissue_last
+        
     endif else begin ; Re-package the error to be a MIDLE_RUNTIME_ERR
         self.showError, !error_state.msg
         message, 'MIDLE_RUNTIME_ERR - ' + !error_state.msg, /noprint, /noname, /noprefix

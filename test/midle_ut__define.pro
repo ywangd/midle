@@ -378,6 +378,21 @@ function Midle_ut::test_if
     return, 1
 end
 
+function Midle_ut::test_for
+    
+    midle, 'a = 0 & for i=1,10 do begin & if i eq 2 then continue & a = a + i & if i eq 5 then break & endfor', env
+    assert, env.a eq 13
+    assert, env.i eq 5
+    
+    env = Dict()
+    midle, 'a = 0 & foreach i,indgen(10,start=1) do begin & if i eq 2 then continue & a = a + i & if i eq 5 then break & endforeach', env
+    assert, env.a eq 13
+    assert, env.i eq 5
+    
+    return, 1
+end
+
+
 
 pro Midle_ut__define, class
     class = { Midle_ut, inherits MGutTestCase }
