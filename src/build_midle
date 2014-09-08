@@ -1,0 +1,6 @@
+resolve_routine, 'midle'
+srcinfo = routine_info('midle', /source)
+srcroot = file_dirname(srcinfo.path)
+srcroutines = file_basename(file_search(srcroot, '*.pro'), '.pro')
+foreach r, srcroutines do resolve_routine, r, /either, /compile_full_file, /no_recompile
+resolve_all, /continue_on_error, skip_routines='envi'

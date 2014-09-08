@@ -1,0 +1,16 @@
+; reset idl session
+.reset_session
+
+@build_midle
+prjroot = file_dirname(srcroot)
+saved_path = !path
+pathsep = path_sep(/search_path)
+!path = projroot + pathsep + !path
+resolve_routine, 'main', /compile_full_file
+!path = saved_path
+
+; resolve all routines (skip built-in envi routines)
+resolve_all, /continue_on_error, skip_routines='envi'
+
+; create the project save file
+save, /routines, filename=filepath('midle.sav', root_dir=prjroot), /verbose

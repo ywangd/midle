@@ -11,8 +11,3 @@
 pro main
     midlegui
 end
-
-main
-
-end
-

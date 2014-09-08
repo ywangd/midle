@@ -106,7 +106,7 @@ pro midlegui_runsel, event
 end
 
 pro midlegui_about, event
-    ok = dialog_message('Mini IDL Evaluator GUI', title='About', /information, dialog_parent=event.top)
+    ok = dialog_message('Mini IDL Evaluator Console', title='About', /information, dialog_parent=event.top)
 end
 
 pro midlegui_cmdline, event
@@ -169,7 +169,8 @@ end
 
 pro midlegui, group_leader=group_leader
     
-    tlb = widget_base(column=1, tlb_size_event=0, title='MIDLE Console', mbar=menubarID, group_leader=group_leader)
+    tlb = widget_base(column=1, tlb_size_event=0, title='MIDLE Console', mbar=menubarID, $
+        tlb_frame_attr=1, group_leader=group_leader)
 
     mid_file = widget_button(menubarID, Value='File', /menu)
     mid_open = widget_button(mid_file, Value='Open...', accelerator='Alt+O', event_pro='midlegui_open') 
