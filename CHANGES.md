@@ -1,5 +1,13 @@
 # MIDLE Changelog
 
+## Version 0.4.0 2014-09-08
+* **New Feature**: Limited support of selected program control constructs
+  (IF/ELSE, FOR, FOREACH, CONTINUE, BREAK).
+* **New Feature**: Add midlegui to provide a GUI console and facilitate the
+  usage of MIDLE as a script engine.
+* **Improve**: The demo GUI application is now a solid example of how MIDLE
+  console can be used to control the host application.
+
 ## Version 0.3.0 2014-08-04
 * **New Feature**: A demo GUI is added to showcase how MIDLE can be used in IDL
   Virtual Machine.

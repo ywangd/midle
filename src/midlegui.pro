@@ -84,9 +84,9 @@ pro midlegui_saveas, event
     filename = dialog_pickfile(/write, title='Save script as')
     if filename ne '' then begin
         info.filename = filename
+        widget_control, event.top, set_uvalue=info, /no_copy
         midlegui_save, event
-    endif
-    widget_control, event.top, set_uvalue=info, /no_copy
+    endif else widget_control, event.top, set_uvalue=info, /no_copy
 end
 
 pro midlegui_run, event
@@ -167,16 +167,26 @@ pro midlegui_cleanup, tlb
 end
 
 
-pro midlegui, group_leader=group_leader
+pro midlegui, env=env, $
+    group_leader=group_leader, $
+    title=title, $
+    xsize=xsize, $
+    ysize=ysize
     
-    tlb = widget_base(column=1, tlb_size_event=0, title='MIDLE Console', mbar=menubarID, $
+    if env eq !NULL then env = Dictionary()
+    if n_elements(title) eq 0 then title = 'MIDLE Console'
+    if n_elements(xsize) eq 0 then xsize = 120
+    if n_elements(ysize) eq 0 then ysize = 41
+    ysize = ysize > 41
+    
+    tlb = widget_base(column=1, tlb_size_event=0, title=title, mbar=menubarID, $
         tlb_frame_attr=1, group_leader=group_leader)
 
     mid_file = widget_button(menubarID, Value='File', /menu)
-    mid_open = widget_button(mid_file, Value='Open...', accelerator='Alt+O', event_pro='midlegui_open') 
-    mid_save = widget_button(mid_file, Value='Save', accelerator='Alt+S', event_pro='midlegui_save') 
+    mid_open = widget_button(mid_file, Value='Open...', accelerator='Ctrl+O', event_pro='midlegui_open') 
+    mid_save = widget_button(mid_file, Value='Save', accelerator='Ctrl+S', event_pro='midlegui_save') 
     mid_save = widget_button(mid_file, Value='Save As...', event_pro='midlegui_saveas') 
-    mid_exit = widget_button(mid_file, Value='Exit', /separator, accelerator='Alt+X', event_pro='midlegui_exit')
+    mid_exit = widget_button(mid_file, Value='Exit', /separator, accelerator='Ctrl+X', event_pro='midlegui_exit')
     
     mid_runm = widget_button(menubarID, Value='Run', /menu)
     mid_run = widget_button(mid_runm, Value='Run', accelerator='F5', event_pro='midlegui_run') 
@@ -185,16 +195,15 @@ pro midlegui, group_leader=group_leader
     mid_help = widget_button(menubarID, Value='Help', /menu)
     mid_about = widget_button(mid_help, Value='About', event_pro='midlegui_about') 
 
-    xsize_workable_area = 120
-    editor = widget_text(tlb, uname='editor', xsize=xsize_workable_area, ysize=30, /scroll, /editable)
-    echo = widget_text(tlb, uname='echo', xsize=xsize_workable_area, ysize=10, /scroll)
-    cmdline = widget_text(tlb, xsize=xsize_workable_area, ysize=1, /editable, /all_event, event_pro='midlegui_cmdline')
+    editor = widget_text(tlb, uname='editor', xsize=xsize, ysize=ysize-11, /scroll, /editable)
+    echo = widget_text(tlb, uname='echo', xsize=xsize, ysize=10, /scroll)
+    cmdline = widget_text(tlb, xsize=xsize, ysize=1, /editable, /all_event, event_pro='midlegui_cmdline')
     
     session_log = filepath('midle_session.pro', root=getenv('IDL_TMPDIR'))
     print, 'Session Logfile: ', session_log
     
-    info = dictionary()
-    info.env = dictionary()
+    info = Dictionary()
+    info.env = env
     info.history = list()
     info.history_idx = 0
     info.buffer = ''
@@ -206,7 +215,8 @@ pro midlegui, group_leader=group_leader
     widget_control, tlb, set_uvalue=info, /no_copy
     widget_control, tlb, /realize
     
-    xmanager, 'midlegui', tlb, /no_block, event_handler='midlegui_tlb_handler', cleanup='midlegui_cleanup'
+    xmanager, 'midlegui', tlb, /no_block, event_handler='midlegui_tlb_handler', cleanup='midlegui_cleanup', $
+        group_leader=group_leader
     
     journal, session_log
     flush, !journal

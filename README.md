@@ -2,17 +2,18 @@
 Evaluate IDL statements and expressions without `EXECUTE`, i.e. virtual machine
 safe. It can be an alternative to `EXECUTE` in many cases.
 
-MIDLE implements its own parser and evaluates simple IDL statements and
-expressions without resorting to the power of `EXECUTE`. It even adds
-[additional language features](#added-features) such as syntax for HASH and LIST
-literals, higher level array concatenation, bettering support for chaining
-function/method calls and subscripts. 
+MIDLE implements its own parser and evaluates IDL statements and expressions
+without resorting to the power of `EXECUTE`. It even adds [additional language
+features](#added-features) such as syntax for HASH and LIST literals, higher
+level array concatenation, bettering support for chaining function/method calls
+and subscripts. 
 
 MIDLE is however not without limitations. Some limitations are due to the limit
 of IDL language itself, notably output arguments and object property access
 (object method calls are OK). Others are deliberately set by design to meet the
-scope of MIDLE, notably program control constructs. Please refer to [Missing
-Features](#missing-features) section for details.
+scope of MIDLE, notably procedure/function creation and limited support of
+program control constructs. Please refer to [Missing Features](#missing-features) 
+section for details.
 
 MIDLE requires IDL 8.0 or up (8.3 is recommended).
 
@@ -25,15 +26,16 @@ to the fact that the IDL virtual machine does not allow `EXECUTE`.
 MIDLE is designed to fill the gap. It initially focused only on the
 right-hand-side of the `=` sign, i.e. the expression and was later decided to
 support full assignment statements as well as procedure calls. It now has a
-broader scope than what it was originated from. 
-It is even possible to use MIDLE as a simple scripting engine to GUI
-applications running in IDL virtual machine and expose some powers of the
-underlying IDL language to end users who do not own IDL licenses.
+broader scope than what it was originated from. For an example, it is possible 
+to use MIDLE as a simple scripting engine to GUI applications running in IDL
+virtual machine. This opens the possibility to script the application using IDL
+scripts. It can also exposes some powers of the underlying IDL language to end
+users who do not own IDL licenses.
 
 It is also worth to note that MIDLE is not envisioned to be fast or memory
 efficient (at least not now). For situations where `EXECUTE` is needed, you
 are hardly looking for performance anyway (if you are, you may want to
-re-think the design of the program). As a semi-replacement of `EXECUT`, MIDLE is
+re-think the design of the program). As a semi-replacement of `EXECUTE`, MIDLE is
 meant to be flexible and it is pretty good at its own job. In addition, MIDLE
 does not re-compile any routines, which means it could be faster than `EXECUTE`
 in some situations.
@@ -158,6 +160,27 @@ print, midle('h["a", 0, 1, 2] = 420', env)
 print, (env.a)[0,1,2]  ; output 420
 ```
 
+MIDLE has limited support of program control constructs.
+```IDL
+midle, 'a = 1 & if a eq 1 then print, "True" else print, "False"'
+midle, 'for i = 0, 9 do print, i'
+midle, 'foreach i, indgen(10) do print, i'
+```
+
+Compound statements are also supported.
+```IDL
+midle, ['if counter gt 0 then begin', $
+        '    for i = 1, counter do begin', $
+        '        if i mod 7 eq 0 then continue', $
+        '        if i mod 2 eq 0 then print, "Even", i else print, "Odd", i', $
+        '        if i gt 40 then break', $
+        '    endfor', $
+        'endif else begin', $
+        '    print, "no loop required"', $
+        'endelse'], $
+        {counter: 42}
+```
+
 List literal is written by list the items inside a pair of parenthesis:
 ```IDL
 print, midle('("this", "is", "a", "list", "literal", 42)')
@@ -241,9 +264,20 @@ print, midle('42 + a', error=error)  ; varaible a is undefined
 ```
 The content of `error` is now `MIDLE_RUNTIME_ERR - Undefined variable: a`.
 
-A demo GUI application is also available to showcase how MIDLE can run
-interactively in IDL virtual machine. The entry routine of the GUI application
-is named **MAIN**, which runs automatically in IDL virtual machine. 
+A GUI is also provided to facilitate the use of MIDLE as a script engine. It is
+envisioned that a host GUI application would call the MIDLE GUI to provide a
+console for editing/running IDL scripts that controls the host application. A
+sample usage is something like the follows:
+```IDL
+midlegui, env=HOST_ENV, group_leader=HOST_APP_ID
+```
+
+An demo of such an application can be found inside the `demo` folder. 
+- Startup the demo
+- Click to access the MIDLE console
+- File -> Open to load `script_01` inside the `demo` folder
+- Run -> Run (or press **F5**) to watch the boat sails while the sun is setting.
+- An animated GIF file, `demo.gif`, is also saved.
 
 ## <a name="missing-features"></a>Missing Features
 The missing features fall into two broad categories. The first category is *By
@@ -253,9 +287,8 @@ IDL's own limitations and cannot be technically circumvented (please let me
 know if there are ways to add them). 
 
 ### By Design
-- Program control constructs are not supported. This means no support for
-  `IF...THEN...ELSE`, `CASE`, `SWITCH`, `WHILE`, `REPEAT`, `FOR`, `FOREACH`,
-  `GOTO`, etc.
+- Limited support for program control constructs. Currently only support 
+  `IF...THEN...ELSE`, `FOR`, `FOREACH`, `CONTINUE`, `BREAK`.
 - No support for routine definitions, i.e. `PRO`, `FUNCTION` (`EXECUTE` does not
   support them either).
 - Hex and Oct literals are not supported

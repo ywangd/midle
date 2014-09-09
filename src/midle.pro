@@ -33,6 +33,16 @@
 function midle, _lines_or_file, _env, file=file, ast=ast, error=error
     compile_opt logical_predicate
     
+    ; Try compile the custom Dictionary class, if not found, just skip and use the IDL 8.3 built-in.
+    catch, theError
+    if theError ne 0 then begin
+        catch, /cancel
+        goto, MAIN 
+    endif
+    resolve_routine, 'Dictionary', /is_function, /compile_full_file, /no_recompile
+    catch, /cancel
+    
+    MAIN:
     error = !NULL
     catch, theError
     if theError ne 0 then begin

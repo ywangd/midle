@@ -1,0 +1,25 @@
+; Determine the points for the boat to travel.
+x = findgen(100)
+y = 20 * sin(x*2*!PI/25.0) * exp(-0.01*x)
+
+; Export as animated gif
+p.save, 'demo.gif', res=96
+
+; Translate boat using data coordinates,
+; Translate sun using device coordinates.
+for i=1,99 do begin
+
+    p.save, 'demo.gif', res=96, /append
+    boat.translate, 1, y[i]-y[i-1], /data
+    sun.translate, 1, -0.5
+    set_sun_color, sun, [255-i, 255-i, 0]
+    set_background_color, p, [135-i, 206-i, 250-i]
+
+endfor
+p.save, 'demo.gif', res=96, /append, /close
+
+; reset
+boat.translate, /reset
+sun.translate, /reset
+set_sun_color, sun, 'yellow'
+set_background_color, p, 'light sky blue'

@@ -1,16 +1,24 @@
 ; reset idl session
-.reset_session
+.full_reset_session
+
+; Delete the old build
+cd, current=prjroot
+savefile = filepath('midle.sav', root=prjroot)
+file_delete, savefile, /allow_nonexist
 
 @build_midle
-prjroot = file_dirname(srcroot)
+
 saved_path = !path
 pathsep = path_sep(/search_path)
-!path = projroot + pathsep + !path
+!path = prjroot + pathsep + !path
 resolve_routine, 'main', /compile_full_file
 !path = saved_path
 
-; resolve all routines (skip built-in envi routines)
-resolve_all, /continue_on_error, skip_routines='envi'
+.com Colorbar__define
+.com IDLffLangCat__define
+; resolve all routines
+resolve_all, class=['GraphicsWin']
 
 ; create the project save file
-save, /routines, filename=filepath('midle.sav', root_dir=prjroot), /verbose
+save, /routines, filename=savefile
+print, 'Build Complete'
