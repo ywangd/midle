@@ -33,7 +33,6 @@ pro midle_popup, event
 end
 
 pro main
-    ; Create the widgets.
 
     wBase = widget_base(/column)
     wDraw = widget_window(wBase,  x_scroll_size=600, y_scroll_size=450)

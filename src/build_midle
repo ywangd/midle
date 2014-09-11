@@ -1,3 +1,4 @@
+; Compile all files in the src folder excluding demo files
 if n_elements(srcroot) eq 0 then begin & $ 
     resolve_routine, 'midle' & $
     srcinfo = routine_info('midle', /source) & $

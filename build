@@ -1,24 +1,29 @@
-; reset idl session
+; Compile MIDLE including the demo GUI application
+
+; Reset idl session
 .full_reset_session
 
-; Delete the old build
+; Delete old build if exists
 cd, current=prjroot
 savefile = filepath('midle.sav', root=prjroot)
 file_delete, savefile, /allow_nonexist
 
+; Compile all source files
 @build_midle
 
+; Add demo directory to IDL path
 saved_path = !path
 pathsep = path_sep(/search_path)
 !path = prjroot + pathsep + !path
+
+; Compile the main routine
 resolve_routine, 'main', /compile_full_file
+; resolve all routines
+resolve_all
+
+; Restore the IDL path
 !path = saved_path
 
-.com Colorbar__define
-.com IDLffLangCat__define
-; resolve all routines
-resolve_all, class=['GraphicsWin']
-
-; create the project save file
+; Create the project save file
 save, /routines, filename=savefile
 print, 'Build Complete'
