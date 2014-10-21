@@ -329,7 +329,7 @@ function Midle_ut::test_misc
 end
 
 function Midle_ut::test_if
-    env = Dict()
+    env = Dictionary()
     env.a = 1
     midle, 'if a eq 1 then x = 1 else x = -1', env
     assert, env.x eq 1
@@ -384,7 +384,7 @@ function Midle_ut::test_for
     assert, env.a eq 13
     assert, env.i eq 5
     
-    env = Dict()
+    env = Dictionary()
     midle, 'a = 0 & foreach i,indgen(10,start=1) do begin & if i eq 2 then continue & a = a + i & if i eq 5 then break & endforeach', env
     assert, env.a eq 13
     assert, env.i eq 5
